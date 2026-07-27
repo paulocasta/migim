@@ -383,16 +383,30 @@ export default function RutinaBuilder() {
         ))}
 
         {addingDay ? (
-          <div className={styles.addDayRow}>
-            <input
-              className={styles.dayInput}
-              value={newDayLabel}
-              onChange={(e) => setNewDayLabel(e.target.value)}
-              placeholder="Ej: Lunes"
-              autoFocus
-            />
-            <button className={styles.btnIcon} onClick={() => addDayMut.mutate()} disabled={!newDayLabel || addDayMut.isPending}>✓</button>
-            <button className={styles.btnIconGhost} onClick={() => setAddingDay(false)}>✕</button>
+          <div className={styles.addDayPanel}>
+            <div className={styles.daySuggestions}>
+              {['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map((d) => (
+                <button
+                  key={d}
+                  className={`${styles.daySugBtn} ${newDayLabel === d ? styles.daySugBtnActive : ''}`}
+                  onClick={() => setNewDayLabel(d)}
+                  type="button"
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+            <div className={styles.addDayRow}>
+              <input
+                className={styles.dayInput}
+                value={newDayLabel}
+                onChange={(e) => setNewDayLabel(e.target.value)}
+                placeholder="O escribí un nombre custom…"
+                autoFocus
+              />
+              <button className={styles.btnIcon} onClick={() => addDayMut.mutate()} disabled={!newDayLabel || addDayMut.isPending}>✓</button>
+              <button className={styles.btnIconGhost} onClick={() => { setAddingDay(false); setNewDayLabel(''); }}>✕</button>
+            </div>
           </div>
         ) : (
           <button className={styles.addDayBtn} onClick={() => setAddingDay(true)}>+ Día</button>

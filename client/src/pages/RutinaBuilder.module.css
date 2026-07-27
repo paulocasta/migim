@@ -97,6 +97,42 @@
 }
 .addDayBtn:hover { border-color: #e94560; color: #e94560; }
 
+.addDayPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: #16213e;
+  border: 1px solid #2a4a7f;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+
+.daySuggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.daySugBtn {
+  padding: 0.25rem 0.6rem;
+  border-radius: 14px;
+  background: #0f3460;
+  border: 1px solid #2a4a7f;
+  color: #8892a4;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.daySugBtn:hover { border-color: #e94560; color: #eaeaea; }
+
+.daySugBtnActive {
+  background: #e94560;
+  border-color: #e94560;
+  color: #fff;
+}
+
 .addDayRow {
   display: flex;
   align-items: center;
@@ -111,7 +147,8 @@
   padding: 0.35rem 0.7rem;
   font-size: 0.875rem;
   outline: none;
-  width: 120px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* ── Day content ──────────────────────────────────────────────────────────── */
