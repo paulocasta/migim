@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
 import Catalogo from './pages/Catalogo';
+import Rutinas from './pages/Rutinas';
+import RutinaBuilder from './pages/RutinaBuilder';
 import RutinaAlumno from './pages/RutinaAlumno';
 
 const queryClient = new QueryClient({
@@ -31,6 +33,8 @@ export default function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/catalogo" element={<Catalogo />} />
+              <Route path="/rutinas" element={<Rutinas />} />
+              <Route path="/rutinas/:id" element={<RutinaBuilder />} />
             </Route>
 
             <Route element={<ProtectedRoute roles={['alumno']} />}>

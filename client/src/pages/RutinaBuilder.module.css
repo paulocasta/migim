@@ -1,0 +1,449 @@
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.builderHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.backBtn {
+  background: transparent;
+  border: 1.5px solid #2a4a7f;
+  border-radius: 6px;
+  color: #8892a4;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.backBtn:hover { border-color: #eaeaea; color: #eaeaea; }
+
+.headerInfo { flex: 1; }
+
+.routineTitle { font-size: 1.4rem; font-weight: 700; margin: 0 0 0.25rem; }
+
+.headerMeta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+.metaItem { font-size: 0.85rem; color: #8892a4; }
+
+.activoBtn {
+  border: 1.5px solid;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  white-space: nowrap;
+}
+.activoBtnOn { border-color: #22c55e; color: #22c55e; }
+.activoBtnOn:hover { background: rgba(34,197,94,0.1); }
+.activoBtnOff { border-color: #9ca3af; color: #9ca3af; }
+.activoBtnOff:hover { background: rgba(156,163,175,0.1); }
+
+/* ── Day tabs ─────────────────────────────────────────────────────────────── */
+.dayTabs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2a4a7f;
+}
+
+.dayTabWrap { display: flex; align-items: center; gap: 2px; }
+
+.dayTab {
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px 6px 0 0;
+  border: 1.5px solid #2a4a7f;
+  border-bottom: none;
+  background: transparent;
+  color: #8892a4;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.dayTab:hover { color: #eaeaea; border-color: #e94560; }
+.dayTabActive { background: #16213e; border-color: #e94560; color: #e94560; }
+
+.removeDayBtn {
+  background: transparent;
+  border: none;
+  color: #8892a4;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+.removeDayBtn:hover { color: #e94560; }
+
+.addDayBtn {
+  padding: 0.4rem 0.85rem;
+  border: 1.5px dashed #2a4a7f;
+  border-radius: 6px;
+  background: transparent;
+  color: #8892a4;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.addDayBtn:hover { border-color: #e94560; color: #e94560; }
+
+.addDayRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dayInput {
+  background: #0f3460;
+  border: 1.5px solid #e94560;
+  border-radius: 6px;
+  color: #eaeaea;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.875rem;
+  outline: none;
+  width: 120px;
+}
+
+/* ── Day content ──────────────────────────────────────────────────────────── */
+.dayContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Block card ───────────────────────────────────────────────────────────── */
+.blockCard {
+  background: #16213e;
+  border: 1px solid #2a4a7f;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  background: rgba(42,74,127,0.3);
+  border-bottom: 1px solid #2a4a7f;
+}
+
+.blockType {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #b080ff;
+}
+
+.exList2 {
+  padding: 0.5rem 0;
+}
+
+.btnAddBlock {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: none;
+  border-top: 1px dashed #2a4a7f;
+  color: #8892a4;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s, background 0.15s;
+}
+.btnAddBlock:hover { color: #e94560; background: rgba(233,69,96,0.05); }
+
+.addBlockRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #2a4a7f;
+}
+
+.inlineSelect {
+  background: #0f3460;
+  border: 1.5px solid #2a4a7f;
+  border-radius: 6px;
+  color: #eaeaea;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.875rem;
+  outline: none;
+  flex: 1;
+}
+
+.btnAddDay {
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: 1.5px dashed #2a4a7f;
+  border-radius: 8px;
+  color: #8892a4;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+  text-align: center;
+}
+.btnAddDay:hover { border-color: #e94560; color: #e94560; }
+
+/* ── Exercise item ────────────────────────────────────────────────────────── */
+.exItem {
+  border-bottom: 1px solid rgba(42,74,127,0.4);
+}
+.exItem:last-child { border-bottom: none; }
+
+.exItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+}
+
+.exToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+  text-align: left;
+  padding: 0;
+}
+
+.exToggleIcon { color: #8892a4; font-size: 0.75rem; width: 12px; }
+
+.exName { font-size: 0.9rem; color: #eaeaea; font-weight: 500; }
+
+.catTag {
+  font-size: 0.7rem;
+  color: #8892a4;
+  background: rgba(42,74,127,0.5);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.setsPanel {
+  padding: 0.4rem 1rem 0.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.setsEmpty {
+  font-size: 0.8rem;
+  color: #8892a4;
+  margin: 0;
+  font-style: italic;
+}
+
+.exNotas {
+  font-size: 0.78rem;
+  color: #8892a4;
+  margin: 0.25rem 0 0;
+  font-style: italic;
+}
+
+/* ── Set rows ─────────────────────────────────────────────────────────────── */
+.setRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.setLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #eaeaea;
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+}
+
+.setX { color: #8892a4; font-size: 0.875rem; }
+
+.setInput {
+  background: #0f3460;
+  border: 1.5px solid #2a4a7f;
+  border-radius: 5px;
+  color: #eaeaea;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+  outline: none;
+  text-align: center;
+}
+.setInput:focus { border-color: #e94560; }
+
+.btnAddSmall {
+  background: transparent;
+  border: 1.5px dashed #2a4a7f;
+  border-radius: 5px;
+  color: #8892a4;
+  font-size: 0.78rem;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 0.15rem;
+}
+.btnAddSmall:hover { border-color: #e94560; color: #e94560; }
+
+/* ── Icon buttons ─────────────────────────────────────────────────────────── */
+.btnIcon {
+  background: rgba(233,69,96,0.15);
+  border: none;
+  border-radius: 4px;
+  color: #22c55e;
+  cursor: pointer;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.btnIcon:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnIconGhost {
+  background: transparent;
+  border: none;
+  color: #8892a4;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.btnIconGhost:hover { color: #eaeaea; }
+
+.btnIconDanger {
+  background: transparent;
+  border: none;
+  color: #e94560;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.btnIconDanger:hover { opacity: 1; }
+.btnIconDanger:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Exercise picker modal ────────────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.pickerCard {
+  background: #16213e;
+  border: 1px solid #2a4a7f;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80dvh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid #2a4a7f;
+  flex-shrink: 0;
+}
+.modalHeader h2 { font-size: 1rem; margin: 0; }
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #8892a4;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.15s;
+}
+.closeBtn:hover { color: #eaeaea; }
+
+.pickerBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  padding: 1rem 1.5rem;
+  gap: 0.75rem;
+}
+
+.searchInput {
+  background: #0f3460;
+  border: 1.5px solid #2a4a7f;
+  border-radius: 7px;
+  color: #eaeaea;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.searchInput:focus { border-color: #e94560; }
+
+.exList {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exPickerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s;
+}
+.exPickerRow:hover { background: rgba(255,255,255,0.04); }
+.exPickerSelected { background: rgba(233,69,96,0.1); border-color: #e94560; }
+
+.pickerActions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.btnPrimary { background: #e94560; color: #fff; border: none; border-radius: 7px; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.btnPrimary:hover:not(:disabled) { background: #c73652; }
+.btnPrimary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btnSecondary { background: transparent; color: #8892a4; border: 1.5px solid #2a4a7f; border-radius: 6px; padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
+.btnSecondary:hover { border-color: #eaeaea; color: #eaeaea; }
+
+/* ── Misc ─────────────────────────────────────────────────────────────────── */
+.msg { color: #8892a4; text-align: center; margin-top: 1rem; font-size: 0.875rem; }
+.msgError { color: #e94560; text-align: center; margin-top: 1rem; }

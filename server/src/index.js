@@ -18,6 +18,14 @@ app.use('/api/users', require('./modules/users/routes'));
 app.use('/api/categories', require('./modules/categories/routes'));
 app.use('/api/exercises', require('./modules/exercises/routes'));
 
+const routineRoutes = require('./modules/routines/routes');
+app.use('/api/block-types', routineRoutes.blockTypesRouter);
+app.use('/api/routines', routineRoutes.routinesRouter);
+app.use('/api/routine-days', routineRoutes.daysRouter);
+app.use('/api/routine-blocks', routineRoutes.blocksRouter);
+app.use('/api/routine-exercises', routineRoutes.reRouter);
+app.use('/api/prescribed-sets', routineRoutes.setsRouter);
+
 // health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
