@@ -46,6 +46,31 @@ const TABS = [
 
 // ── Progress tab ───────────────────────────────────────────────────────────────
 
+const LINE_COLORS = ['#e94560', '#5599ff', '#22c55e', '#f59e0b', '#a855f7', '#06b6d4'];
+
+function buildProgressChart(raw) {
+  // Collect unique set labels ordered by reps desc
+  const labelsSet = new Map();
+  raw.forEach((r) => {
+    const key = `${r.sets_count}×${r.reps}`;
+    if (!labelsSet.has(key)) labelsSet.set(key, { sets_count: Number(r.sets_count), reps: Number(r.reps) });
+  });
+  const labels = [...labelsSet.keys()].sort((a, b) => {
+    const av = labelsSet.get(a); const bv = labelsSet.get(b);
+    return bv.reps - av.reps || bv.sets_count - av.sets_count;
+  });
+
+  // Pivot: one row per fecha
+  const byDate = new Map();
+  raw.forEach((r) => {
+    const fecha = fmtDate(r.fecha);
+    if (!byDate.has(fecha)) byDate.set(fecha, { fecha });
+    byDate.get(fecha)[`${r.sets_count}×${r.reps}`] = Number(r.peso);
+  });
+
+  return { labels, rows: [...byDate.values()] };
+}
+
 function ProgressTab({ alumnoId }) {
   const [selectedExId, setSelectedExId] = useState('');
 
@@ -55,18 +80,18 @@ function ProgressTab({ alumnoId }) {
     enabled: !!alumnoId || alumnoId === undefined,
   });
 
-  const { data: chartData = [], isLoading } = useQuery({
+  const { data: raw = [], isLoading } = useQuery({
     queryKey: ['metrics-progress', alumnoId, selectedExId],
     queryFn: () => metricsApi.progress(selectedExId, alumnoId),
     enabled: !!selectedExId,
   });
 
-  const formatted = chartData.map((d) => ({
-    ...d,
-    fecha: fmtDate(d.fecha),
-    peso_max: Number(d.peso_max),
-    peso_avg: Number(d.peso_avg),
-  }));
+  const { labels, rows } = buildProgressChart(raw);
+
+  const pesoMax = rows.length
+    ? Math.max(...rows.flatMap((r) => labels.map((l) => r[l] ?? 0)))
+    : 0;
+  const sesiones = new Set(raw.map((r) => fmtDate(r.fecha))).size;
 
   return (
     <div className={styles.tabContent}>
@@ -86,26 +111,37 @@ function ProgressTab({ alumnoId }) {
 
       {selectedExId && isLoading && <p className={styles.hint}>Cargando...</p>}
 
-      {selectedExId && !isLoading && formatted.length === 0 && (
+      {selectedExId && !isLoading && rows.length === 0 && (
         <p className={styles.hint}>Sin datos para este ejercicio todavía.</p>
       )}
 
-      {formatted.length > 0 && (
+      {rows.length > 0 && (
         <>
           <div className={styles.statRow}>
-            <StatCard label="Peso máximo" value={`${Math.max(...formatted.map(d => d.peso_max))} kg`} />
-            <StatCard label="Sesiones" value={formatted.length} />
+            <StatCard label="Peso máximo" value={`${pesoMax} kg`} />
+            <StatCard label="Sesiones" value={sesiones} />
           </div>
           <div className={styles.chartWrap}>
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={formatted} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+              <LineChart data={rows} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
                 <XAxis dataKey="fecha" stroke={CHART.axis} tick={{ fontSize: 11 }} />
                 <YAxis stroke={CHART.axis} tick={{ fontSize: 11 }} unit=" kg" />
                 <Tooltip {...tooltipStyle} formatter={(v) => [`${v} kg`]} />
                 <Legend wrapperStyle={{ fontSize: 12, color: CHART.axis }} />
-                <Line type="monotone" dataKey="peso_max" name="Peso máx" stroke={CHART.accent} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                <Line type="monotone" dataKey="peso_avg" name="Peso prom" stroke={CHART.blue} strokeWidth={1.5} strokeDasharray="4 2" dot={false} />
+                {labels.map((label, i) => (
+                  <Line
+                    key={label}
+                    type="monotone"
+                    dataKey={label}
+                    name={label}
+                    stroke={LINE_COLORS[i % LINE_COLORS.length]}
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                    connectNulls
+                  />
+                ))}
               </LineChart>
             </ResponsiveContainer>
           </div>

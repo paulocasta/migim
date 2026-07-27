@@ -21,14 +21,14 @@ async function progress(alumnoId, exerciseId) {
   const { rows } = await db.query(
     `SELECT
        we.fecha,
-       MAX(we.peso)::numeric(6,2) AS peso_max,
-       ROUND(AVG(we.peso), 2)::numeric(6,2) AS peso_avg
+       ps.sets_count,
+       ps.reps,
+       we.peso::numeric(6,2) AS peso
      FROM weight_entries we
      JOIN prescribed_sets ps ON we.prescribed_set_id = ps.id
      JOIN routine_exercises re ON ps.routine_exercise_id = re.id
      WHERE we.alumno_id = $1 AND re.exercise_id = $2
-     GROUP BY we.fecha
-     ORDER BY we.fecha ASC`,
+     ORDER BY we.fecha ASC, ps.reps DESC, ps.sets_count DESC`,
     [alumnoId, exerciseId]
   );
   return rows;
