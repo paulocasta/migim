@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Usuarios from './pages/Usuarios';
 import RutinaAlumno from './pages/RutinaAlumno';
 
 const queryClient = new QueryClient({
@@ -27,6 +28,7 @@ export default function App() {
 
             <Route element={<ProtectedRoute roles={['admin', 'profesor']} />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/usuarios" element={<Usuarios />} />
             </Route>
 
             <Route element={<ProtectedRoute roles={['alumno']} />}>

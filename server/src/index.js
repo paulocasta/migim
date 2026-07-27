@@ -14,6 +14,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', config.uploadsDir)
 
 // rutas
 app.use('/api/auth', require('./modules/auth/routes'));
+app.use('/api/users', require('./modules/users/routes'));
 
 // health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

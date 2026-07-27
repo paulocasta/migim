@@ -1,0 +1,116 @@
+.wrapper {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a2e;
+  color: #eaeaea;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  height: 56px;
+  background: #16213e;
+  border-bottom: 1px solid #2a4a7f;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #e94560;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.navLink {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #8892a4;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.navLink:hover:not(.soon) {
+  color: #eaeaea;
+  background: rgba(255,255,255,0.06);
+}
+
+.navLink.active {
+  color: #eaeaea;
+  background: rgba(233, 69, 96, 0.15);
+  color: #e94560;
+}
+
+.navLink.soon {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.userName {
+  font-size: 0.875rem;
+  color: #eaeaea;
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .userName { display: inline; }
+}
+
+.userRole {
+  font-size: 0.75rem;
+  color: #8892a4;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .userRole { display: inline; }
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1.5px solid #e94560;
+  color: #e94560;
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.logoutBtn:hover {
+  background: #e94560;
+  color: #fff;
+}
+
+.main {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}

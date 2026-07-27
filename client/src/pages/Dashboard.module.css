@@ -1,69 +1,83 @@
-:root {
-  --bg: #1a1a2e;
-  --card-bg: #16213e;
-  --accent: #e94560;
-  --text: #eaeaea;
-  --text-muted: #8892a4;
+.title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
 }
 
-.wrapper {
-  min-height: 100dvh;
-  background: var(--bg);
-  color: var(--text);
+.sub {
+  color: #8892a4;
+  margin: 0 0 2rem;
 }
 
-.header {
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background: #16213e;
+  border: 1px solid #2a4a7f;
+  border-radius: 10px;
+  padding: 1.25rem 1rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  background: var(--card-bg);
-  border-bottom: 1px solid #2a4a7f;
+  gap: 0.4rem;
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.15s;
 }
 
-.logo {
-  font-size: 1.5rem;
+.statCard:hover {
+  border-color: #e94560;
+  transform: translateY(-2px);
+}
+
+.statValue {
+  font-size: 2rem;
   font-weight: 800;
-  color: var(--accent);
+  color: #e94560;
+  line-height: 1;
 }
 
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.role {
-  color: var(--text-muted);
+.statLabel {
   font-size: 0.8rem;
+  color: #8892a4;
+  text-align: center;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: #16213e;
+  border: 1px solid #2a4a7f;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+}
+
+.card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: #8892a4;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
 }
 
-.logoutBtn {
-  background: transparent;
-  border: 1.5px solid var(--accent);
-  color: var(--accent);
-  border-radius: 6px;
-  padding: 0.35rem 0.75rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.2s;
+.upcoming {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.logoutBtn:hover {
-  background: var(--accent);
-  color: #fff;
-}
-
-.main {
-  padding: 2rem 1.5rem;
-}
-
-.main h2 {
-  margin: 0 0 1rem;
-}
-
-.main p {
-  color: var(--text-muted);
+.upcoming li {
+  font-size: 0.9rem;
+  color: #eaeaea;
 }
