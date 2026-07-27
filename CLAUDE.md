@@ -53,20 +53,27 @@ migim/
     └── src/{api,auth,pages,components,pwa}/
 ```
 
-## Comandos (a completar al implementar)
+## Comandos
 
 ```bash
 # server
 cd server && npm install
 npm run migrate        # migraciones DB
-npm run seed           # seed block_types + categorías + admin inicial
-npm run dev            # API en desarrollo
-npm test               # tests de integración (Supertest)
+npm run seed           # seed block_types + categorías + admin inicial (admin@migim.com / changeme123)
+npm run migrate:seed   # migrate + seed en un paso
+npm run dev            # API en desarrollo (nodemon)
+npm start              # API en producción
 
 # client
 cd client && npm install
-npm run dev            # Vite dev server
-npm run build          # build PWA de producción
+npm run dev            # Vite dev server (proxy a localhost:3001)
+npm run build          # build PWA de producción → dist/
+npm run preview        # preview del build de producción
+
+# pm2 (producción)
+pm2 start ecosystem.config.js --env production
+pm2 restart migim-api
+pm2 logs migim-api
 ```
 
 ## Convenciones
@@ -83,3 +90,9 @@ npm run build          # build PWA de producción
 - [docs/API.md](docs/API.md) — endpoints REST.
 - [docs/ROLES.md](docs/ROLES.md) — matriz de permisos.
 - [docs/ROADMAP.md](docs/ROADMAP.md) — fases de implementación + mejoras futuras.
+- [docs/DEPLOY.md](docs/DEPLOY.md) — guía de deploy en VPS (Nginx + Certbot + pm2 + Postgres).
+
+## Archivos de deploy
+
+- `nginx.conf` — virtual host Nginx (copiar a `/etc/nginx/sites-available/migim`, reemplazar dominio).
+- `ecosystem.config.js` — config pm2 para la API Node.
