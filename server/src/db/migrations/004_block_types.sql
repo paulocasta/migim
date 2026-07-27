@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS block_types (
+  id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  orden INT NOT NULL DEFAULT 0
+);

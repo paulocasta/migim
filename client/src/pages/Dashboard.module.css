@@ -1,0 +1,69 @@
+:root {
+  --bg: #1a1a2e;
+  --card-bg: #16213e;
+  --accent: #e94560;
+  --text: #eaeaea;
+  --text-muted: #8892a4;
+}
+
+.wrapper {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--card-bg);
+  border-bottom: 1px solid #2a4a7f;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.role {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.logoutBtn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.main {
+  padding: 2rem 1.5rem;
+}
+
+.main h2 {
+  margin: 0 0 1rem;
+}
+
+.main p {
+  color: var(--text-muted);
+}
