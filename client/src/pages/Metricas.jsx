@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ResponsiveContainer, ComposedChart, Area, BarChart, Bar,
+  ResponsiveContainer, ComposedChart, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts';
 import { useAuth } from '../auth/AuthContext';
@@ -124,17 +124,6 @@ function ProgressTab({ alumnoId }) {
           <div className={styles.chartWrap}>
             <ResponsiveContainer width="100%" height={280}>
               <ComposedChart data={rows} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                <defs>
-                  {labels.map((label, i) => {
-                    const color = LINE_COLORS[i % LINE_COLORS.length];
-                    return (
-                      <linearGradient key={label} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor={color} stopOpacity={0.25} />
-                        <stop offset="95%" stopColor={color} stopOpacity={0.02} />
-                      </linearGradient>
-                    );
-                  })}
-                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
                 <XAxis dataKey="fecha" stroke={CHART.axis} tick={{ fontSize: 11 }} />
                 <YAxis
@@ -151,17 +140,12 @@ function ProgressTab({ alumnoId }) {
                 {labels.map((label, i) => {
                   const color = LINE_COLORS[i % LINE_COLORS.length];
                   return (
-                    <Area
+                    <Bar
                       key={label}
-                      type="monotone"
                       dataKey={label}
                       name={label}
-                      stroke={color}
-                      strokeWidth={2}
-                      fill={`url(#grad-${i})`}
-                      dot={{ r: 3, fill: color }}
-                      activeDot={{ r: 5 }}
-                      connectNulls
+                      fill={color}
+                      radius={[3, 3, 0, 0]}
                     />
                   );
                 })}
