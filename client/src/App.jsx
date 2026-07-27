@@ -5,6 +5,7 @@ import { ProtectedRoute } from './auth/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
+import Catalogo from './pages/Catalogo';
 import RutinaAlumno from './pages/RutinaAlumno';
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ export default function App() {
             <Route element={<ProtectedRoute roles={['admin', 'profesor']} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/usuarios" element={<Usuarios />} />
+              <Route path="/catalogo" element={<Catalogo />} />
             </Route>
 
             <Route element={<ProtectedRoute roles={['alumno']} />}>

@@ -5,7 +5,7 @@ import styles from './AppLayout.module.css';
 const NAV = [
   { to: '/dashboard', label: 'Panel', roles: ['admin', 'profesor'] },
   { to: '/usuarios', label: 'Usuarios', roles: ['admin', 'profesor'] },
-  { to: '/catalogo', label: 'Catálogo', roles: ['admin', 'profesor'], soon: true },
+  { to: '/catalogo', label: 'Catálogo', roles: ['admin', 'profesor'] },
   { to: '/rutinas', label: 'Rutinas', roles: ['admin', 'profesor'], soon: true },
 ];
 
