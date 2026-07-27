@@ -172,7 +172,7 @@ function BlockSection({ block, entriesMap, fecha }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function RutinaAlumno() {
-  const [fecha, setFecha] = useState(today);
+  const fecha = today();
   const [selectedRoutineId, setSelectedRoutineId] = useState(null);
   const [selectedDayId, setSelectedDayId] = useState(null);
 
@@ -221,19 +221,9 @@ export default function RutinaAlumno() {
 
   return (
     <AppLayout>
-      {/* Fecha y selector de rutina */}
-      <div className={styles.topBar}>
-        <div className={styles.dateWrap}>
-          <label className={styles.dateLabel}>Fecha de entrenamiento</label>
-          <input
-            className={styles.dateInput}
-            type="date"
-            value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
-          />
-        </div>
-
-        {routines.length > 1 && (
+      {/* Selector de rutina */}
+      {routines.length > 1 && (
+        <div className={styles.topBar}>
           <div className={styles.routineSelect}>
             <label className={styles.dateLabel}>Rutina</label>
             <select
@@ -246,8 +236,8 @@ export default function RutinaAlumno() {
               ))}
             </select>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {routine && (
         <p className={styles.routineInfo}>
