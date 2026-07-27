@@ -136,7 +136,7 @@ function ExerciseCard({ exercise, entriesMap, fecha }) {
         <div className={styles.setsList}>
           {exercise.sets.map((s) => (
             <WeightInput
-              key={s.id}
+              key={`${s.id}-${fecha}`}
               set={s}
               existingEntry={entriesMap[s.id]}
               fecha={fecha}
