@@ -8,7 +8,7 @@ import styles from './Usuarios.module.css';
 const ROLE_LABELS = { admin: 'Admin', profesor: 'Profesor', alumno: 'Alumno' };
 const ROLE_COLORS = { admin: styles.tagAdmin, profesor: styles.tagProfe, alumno: styles.tagAlumno };
 
-const EMPTY_FORM = { nombre: '', email: '', password: '', role: 'alumno' };
+const EMPTY_FORM = { nombre: '', email: '', password: '', passwordConfirm: '', role: 'alumno' };
 
 export default function Usuarios() {
   const { user: me } = useAuth();
@@ -50,7 +50,7 @@ export default function Usuarios() {
   }
 
   function openEdit(u) {
-    setForm({ nombre: u.nombre, email: u.email, password: '', role: u.role });
+    setForm({ nombre: u.nombre, email: u.email, password: '', passwordConfirm: '', role: u.role });
     setFormError('');
     setModal({ mode: 'edit', user: u });
   }
@@ -64,8 +64,14 @@ export default function Usuarios() {
   function handleSubmit(e) {
     e.preventDefault();
     setFormError('');
+    const changingPassword = modal.mode === 'create' || form.password;
+    if (changingPassword && form.password !== form.passwordConfirm) {
+      setFormError('Las contraseñas no coinciden');
+      return;
+    }
     if (modal.mode === 'create') {
-      createMut.mutate(form);
+      const { passwordConfirm, ...data } = form;
+      createMut.mutate(data);
     } else {
       const data = { nombre: form.nombre, email: form.email };
       if (form.password) data.password = form.password;
@@ -204,6 +210,20 @@ export default function Usuarios() {
                   autoComplete="new-password"
                 />
               </label>
+              {(modal.mode === 'create' || form.password) && (
+                <label className={styles.label}>
+                  Confirmar contraseña
+                  <input
+                    className={styles.input}
+                    type="password"
+                    name="passwordConfirm"
+                    value={form.passwordConfirm}
+                    onChange={handleChange}
+                    required={modal.mode === 'create'}
+                    autoComplete="new-password"
+                  />
+                </label>
+              )}
               {modal.mode === 'create' && me.role === 'admin' && (
                 <label className={styles.label}>
                   Rol
