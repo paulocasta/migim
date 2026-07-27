@@ -5,6 +5,7 @@ export const blockTypesApi = {
 };
 
 export const routinesApi = {
+  mine: () => api.get('/routines/mine').then((r) => r.data.routines),
   list: (alumnoId) =>
     api.get('/routines', { params: alumnoId ? { alumnoId } : {} }).then((r) => r.data.routines),
   getTree: (id) => api.get(`/routines/${id}`).then((r) => r.data.routine),
