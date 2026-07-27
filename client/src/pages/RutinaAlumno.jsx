@@ -9,7 +9,9 @@ import styles from './RutinaAlumno.module.css';
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d - offset).toISOString().slice(0, 10);
 }
 
 // ── Video Player ──────────────────────────────────────────────────────────────
