@@ -15,6 +15,18 @@ async function listBlockTypes() {
 
 // ── Routines ──────────────────────────────────────────────────────────────────
 
+async function listForAlumno(alumnoId) {
+  const { rows } = await db.query(
+    `SELECT r.*, cb.nombre AS created_by_nombre
+     FROM routines r
+     JOIN users cb ON r.created_by = cb.id
+     WHERE r.alumno_id = $1 AND r.activo = true
+     ORDER BY r.start_date DESC`,
+    [alumnoId]
+  );
+  return rows;
+}
+
 async function list({ alumnoId, requesterRole, requesterId }) {
   const params = [];
   const conds = [];
@@ -220,7 +232,7 @@ async function removeSet(id) {
 
 module.exports = {
   listBlockTypes,
-  list, getTree, create, update, remove,
+  listForAlumno, list, getTree, create, update, remove,
   createDay, updateDay, removeDay,
   createBlock, removeBlock,
   addExercise, removeExercise,

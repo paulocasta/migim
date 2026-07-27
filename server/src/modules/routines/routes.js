@@ -12,9 +12,10 @@ blockTypesRouter.get('/', auth, ctrl.listBlockTypes);
 
 // /api/routines
 const routinesRouter = Router();
-routinesRouter.get('/', auth, ctrl.list);
+routinesRouter.get('/mine', auth, requireRole('alumno'), ctrl.mine);
+routinesRouter.get('/', auth, requireRole('admin', 'profesor'), ctrl.list);
 routinesRouter.post('/', auth, staff, ctrl.create);
-routinesRouter.get('/:id', auth, ctrl.getTree);
+routinesRouter.get('/:id', auth, ctrl.getTree);       // alumno con ownership check en controller
 routinesRouter.put('/:id', auth, staff, ctrl.update);
 routinesRouter.delete('/:id', auth, staff, ctrl.remove);
 routinesRouter.post('/:routineId/days', auth, staff, ctrl.createDay);

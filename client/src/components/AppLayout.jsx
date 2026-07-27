@@ -7,6 +7,7 @@ const NAV = [
   { to: '/usuarios', label: 'Usuarios', roles: ['admin', 'profesor'] },
   { to: '/catalogo', label: 'Catálogo', roles: ['admin', 'profesor'] },
   { to: '/rutinas', label: 'Rutinas', roles: ['admin', 'profesor'] },
+  { to: '/rutina', label: 'Mi Rutina', roles: ['alumno'] },
 ];
 
 export default function AppLayout({ children }) {

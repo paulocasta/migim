@@ -12,6 +12,12 @@ async function listBlockTypes(_req, res, next) {
 }
 
 // ── Routines ──────────────────────────────────────────────────────────────────
+async function mine(req, res, next) {
+  try {
+    res.json({ routines: await svc.listForAlumno(req.user.id) });
+  } catch (err) { next(err); }
+}
+
 async function list(req, res, next) {
   try {
     const routines = await svc.list({
@@ -24,8 +30,13 @@ async function list(req, res, next) {
 }
 
 async function getTree(req, res, next) {
-  try { res.json({ routine: await svc.getTree(Number(req.params.id)) }); }
-  catch (err) { next(err); }
+  try {
+    const routine = await svc.getTree(Number(req.params.id));
+    if (req.user.role === 'alumno' && routine.alumno_id !== req.user.id) {
+      return res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Sin acceso a esta rutina' } });
+    }
+    res.json({ routine });
+  } catch (err) { next(err); }
 }
 
 const createSchema = z.object({
@@ -130,7 +141,7 @@ async function removeSet(req, res, next) {
 
 module.exports = {
   listBlockTypes,
-  list, getTree, create, update, remove,
+  mine, list, getTree, create, update, remove,
   createDay, updateDay, removeDay,
   createBlock, removeBlock,
   addExercise, removeExercise,

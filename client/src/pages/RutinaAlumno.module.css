@@ -1,0 +1,283 @@
+/* ── Top bar ──────────────────────────────────────────────────────────────── */
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  align-items: flex-end;
+}
+
+.dateWrap, .routineSelect {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.dateLabel {
+  font-size: 0.75rem;
+  color: #8892a4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.dateInput {
+  background: #16213e;
+  border: 1.5px solid #2a4a7f;
+  border-radius: 7px;
+  color: #eaeaea;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.dateInput:focus { border-color: #e94560; }
+
+.routineInfo {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: #eaeaea;
+}
+
+.routineMeta {
+  font-size: 0.8rem;
+  color: #8892a4;
+  font-weight: 400;
+}
+
+/* ── Day tabs ─────────────────────────────────────────────────────────────── */
+.dayTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2a4a7f;
+  overflow-x: auto;
+}
+
+.dayTab {
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  border: 1.5px solid #2a4a7f;
+  background: transparent;
+  color: #8892a4;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.dayTab:hover { border-color: #e94560; color: #eaeaea; }
+.dayTabActive {
+  background: rgba(233, 69, 96, 0.15);
+  border-color: #e94560;
+  color: #e94560;
+  font-weight: 600;
+}
+
+/* ── Day content ──────────────────────────────────────────────────────────── */
+.dayContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Block ────────────────────────────────────────────────────────────────── */
+.block {
+  background: #16213e;
+  border: 1px solid #2a4a7f;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.blockHeader {
+  padding: 0.6rem 1rem;
+  background: rgba(42,74,127,0.3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #b080ff;
+  border-bottom: 1px solid #2a4a7f;
+}
+
+.exList {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Exercise card ────────────────────────────────────────────────────────── */
+.exCard {
+  background: #0f1b35;
+  border: 1.5px solid #2a4a7f;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  transition: border-color 0.2s;
+}
+.exCardDone { border-color: rgba(34,197,94,0.4); }
+
+.exHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  gap: 0.5rem;
+}
+
+.exName {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #eaeaea;
+  margin-bottom: 0.2rem;
+}
+
+.catTag {
+  font-size: 0.7rem;
+  color: #8892a4;
+  background: rgba(42,74,127,0.5);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.doneBadge {
+  font-size: 0.75rem;
+  color: #22c55e;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 10px;
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notas {
+  font-size: 0.8rem;
+  color: #8892a4;
+  font-style: italic;
+  margin: 0 0 0.75rem;
+}
+
+/* ── Video ────────────────────────────────────────────────────────────────── */
+.videoSection { margin-bottom: 0.75rem; }
+
+.videoToggleBtn {
+  background: transparent;
+  border: 1px solid #2a4a7f;
+  border-radius: 6px;
+  color: #8892a4;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 0.5rem;
+}
+.videoToggleBtn:hover { border-color: #e94560; color: #e94560; }
+
+.videoEl {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  background: #000;
+  border: none;
+  display: block;
+}
+
+/* ── Sets ─────────────────────────────────────────────────────────────────── */
+.setsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.weightRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.setLabel {
+  min-width: 52px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #eaeaea;
+  font-variant-numeric: tabular-nums;
+}
+
+.weightInputWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.weightInput {
+  width: 72px;
+  background: #0f3460;
+  border: 1.5px solid #2a4a7f;
+  border-radius: 7px;
+  color: #eaeaea;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.45rem 0.6rem;
+  text-align: right;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.weightInput:focus { border-color: #e94560; }
+.inputError { border-color: #e94560 !important; }
+
+.kgLabel {
+  font-size: 0.85rem;
+  color: #8892a4;
+}
+
+.saveBtn {
+  padding: 0.4rem 0.85rem;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #e94560;
+  background: transparent;
+  color: #e94560;
+  transition: all 0.15s;
+  min-width: 72px;
+}
+.saveBtn:hover:not(:disabled) { background: #e94560; color: #fff; }
+.saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.saveBtnDone {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+.saveBtnDone:hover:not(:disabled) { background: #22c55e; color: #fff; }
+
+.inputErrMsg {
+  font-size: 0.75rem;
+  color: #e94560;
+  width: 100%;
+}
+
+.noSets { font-size: 0.8rem; color: #8892a4; font-style: italic; margin: 0; }
+
+/* ── Misc ─────────────────────────────────────────────────────────────────── */
+.msg { color: #8892a4; text-align: center; margin-top: 2rem; font-size: 0.9rem; }
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40dvh;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.emptyTitle { font-size: 1.2rem; font-weight: 600; color: #eaeaea; margin: 0; }
+
+.emptyDesc { color: #8892a4; margin: 0; }
+
+.emptyMsg { font-size: 0.85rem; color: #8892a4; padding: 0.75rem 1rem; margin: 0; }
