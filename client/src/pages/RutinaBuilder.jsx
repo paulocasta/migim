@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '../components/AppLayout';
+import ConfirmModal from '../components/ConfirmModal';
 import { routinesApi, blockTypesApi } from '../api/routines';
 import { exercisesApi } from '../api/exercises';
 import styles from './RutinaBuilder.module.css';
@@ -26,6 +27,7 @@ function useInvalidate(id) {
 function SetRow({ set, routineId }) {
   const invalidate = useInvalidate(routineId);
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [sc, setSc] = useState(String(set.sets_count));
   const [rp, setRp] = useState(String(set.reps));
 
@@ -48,11 +50,21 @@ function SetRow({ set, routineId }) {
   }
 
   return (
-    <div className={styles.setRow}>
-      <span className={styles.setLabel}>{set.sets_count}×{set.reps}</span>
-      <button className={styles.btnIconGhost} onClick={() => setEditing(true)} title="Editar">✎</button>
-      <button className={styles.btnIconDanger} onClick={() => removeMut.mutate()} disabled={removeMut.isPending} title="Eliminar">×</button>
-    </div>
+    <>
+      <div className={styles.setRow}>
+        <span className={styles.setLabel}>{set.sets_count}×{set.reps}</span>
+        <button className={styles.btnIconGhost} onClick={() => setEditing(true)} title="Editar">✎</button>
+        <button className={styles.btnIconDanger} onClick={() => setConfirmDelete(true)} disabled={removeMut.isPending} title="Eliminar">×</button>
+      </div>
+      {confirmDelete && (
+        <ConfirmModal
+          message={`¿Eliminar la serie ${set.sets_count}×${set.reps}?`}
+          onConfirm={() => removeMut.mutate()}
+          onCancel={() => setConfirmDelete(false)}
+          isPending={removeMut.isPending}
+        />
+      )}
+    </>
   );
 }
 
@@ -91,6 +103,7 @@ function AddSetForm({ reId, routineId }) {
 function ExerciseItem({ ex, routineId }) {
   const invalidate = useInvalidate(routineId);
   const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const removeMut = useMutation({
     mutationFn: () => routinesApi.removeExercise(ex.id),
@@ -98,20 +111,21 @@ function ExerciseItem({ ex, routineId }) {
   });
 
   return (
-    <div className={styles.exItem}>
-      <div className={styles.exItemHeader}>
-        <button className={styles.exToggle} onClick={() => setOpen((v) => !v)}>
-          <span className={styles.exToggleIcon}>{open ? '▾' : '▸'}</span>
-          <span className={styles.exName}>{ex.exercise_nombre}</span>
-          <span className={styles.catTag}>{ex.category_nombre}</span>
-        </button>
-        <button
-          className={styles.btnIconDanger}
-          onClick={() => removeMut.mutate()}
-          disabled={removeMut.isPending}
-          title="Quitar ejercicio"
-        >×</button>
-      </div>
+    <>
+      <div className={styles.exItem}>
+        <div className={styles.exItemHeader}>
+          <button className={styles.exToggle} onClick={() => setOpen((v) => !v)}>
+            <span className={styles.exToggleIcon}>{open ? '▾' : '▸'}</span>
+            <span className={styles.exName}>{ex.exercise_nombre}</span>
+            <span className={styles.catTag}>{ex.category_nombre}</span>
+          </button>
+          <button
+            className={styles.btnIconDanger}
+            onClick={() => setConfirmDelete(true)}
+            disabled={removeMut.isPending}
+            title="Quitar ejercicio"
+          >×</button>
+        </div>
 
       {open && (
         <div className={styles.setsPanel}>
@@ -125,7 +139,16 @@ function ExerciseItem({ ex, routineId }) {
           {ex.notas && <p className={styles.exNotas}>📝 {ex.notas}</p>}
         </div>
       )}
-    </div>
+      </div>
+      {confirmDelete && (
+        <ConfirmModal
+          message={`¿Quitar "${ex.exercise_nombre}" de este bloque?`}
+          onConfirm={() => removeMut.mutate()}
+          onCancel={() => setConfirmDelete(false)}
+          isPending={removeMut.isPending}
+        />
+      )}
+    </>
   );
 }
 
@@ -202,6 +225,7 @@ function AddExercisePicker({ blockId, routineId, onClose }) {
 function BlockCard({ block, routineId }) {
   const invalidate = useInvalidate(routineId);
   const [picker, setPicker] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const removeMut = useMutation({
     mutationFn: () => routinesApi.removeBlock(block.id),
@@ -209,12 +233,13 @@ function BlockCard({ block, routineId }) {
   });
 
   return (
+    <>
     <div className={styles.blockCard}>
       <div className={styles.blockHeader}>
         <span className={styles.blockType}>{block.block_type_nombre}</span>
         <button
           className={styles.btnIconDanger}
-          onClick={() => removeMut.mutate()}
+          onClick={() => setConfirmDelete(true)}
           disabled={removeMut.isPending}
           title="Eliminar bloque"
         >×</button>
@@ -241,6 +266,15 @@ function BlockCard({ block, routineId }) {
         />
       )}
     </div>
+    {confirmDelete && (
+      <ConfirmModal
+        message={`¿Eliminar el bloque "${block.block_type_nombre}" y todos sus ejercicios?`}
+        onConfirm={() => removeMut.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+        isPending={removeMut.isPending}
+      />
+    )}
+    </>
   );
 }
 
@@ -312,6 +346,7 @@ export default function RutinaBuilder() {
   const [selectedDayId, setSelectedDayId] = useState(null);
   const [newDayLabel, setNewDayLabel] = useState('');
   const [addingDay, setAddingDay] = useState(false);
+  const [confirmDeleteDay, setConfirmDeleteDay] = useState(null); // day object | null
 
   const addDayMut = useMutation({
     mutationFn: () => routinesApi.createDay(id, { etiqueta: newDayLabel, orden: (routine?.days?.length ?? 0) }),
@@ -375,7 +410,7 @@ export default function RutinaBuilder() {
             </button>
             <button
               className={styles.removeDayBtn}
-              onClick={() => removeDayMut.mutate(d.id)}
+              onClick={() => setConfirmDeleteDay(d)}
               disabled={removeDayMut.isPending}
               title="Eliminar día"
             >×</button>
@@ -418,6 +453,15 @@ export default function RutinaBuilder() {
         <p className={styles.msg}>Sin días todavía. Agrega el primero con "+ Día".</p>
       ) : (
         <DayContent day={selectedDay} routineId={id} />
+      )}
+
+      {confirmDeleteDay && (
+        <ConfirmModal
+          message={`¿Eliminar el día "${confirmDeleteDay.etiqueta}" y todos sus bloques y ejercicios?`}
+          onConfirm={() => { removeDayMut.mutate(confirmDeleteDay.id); setConfirmDeleteDay(null); }}
+          onCancel={() => setConfirmDeleteDay(null)}
+          isPending={removeDayMut.isPending}
+        />
       )}
     </AppLayout>
   );

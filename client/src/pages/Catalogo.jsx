@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '../components/AppLayout';
+import ConfirmModal from '../components/ConfirmModal';
 import { categoriesApi } from '../api/categories';
 import { exercisesApi } from '../api/exercises';
 import { getEmbedUrl, hasVideo } from '../utils/video';
@@ -55,6 +56,7 @@ function ExerciseModal({ mode, exercise, categories, onClose, onSaved }) {
   const [uploadError, setUploadError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [ex, setEx] = useState(exercise || null);
+  const [confirmClearVideo, setConfirmClearVideo] = useState(false);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['exercises'] });
 
@@ -206,7 +208,7 @@ function ExerciseModal({ mode, exercise, categories, onClose, onSaved }) {
               {ex.video_file_path && (
                 <button
                   className={`${styles.btnSecondary} ${styles.btnDanger}`}
-                  onClick={() => clearVideoMut.mutate()}
+                  onClick={() => setConfirmClearVideo(true)}
                   disabled={clearVideoMut.isPending}
                 >
                   Eliminar archivo
@@ -220,6 +222,14 @@ function ExerciseModal({ mode, exercise, categories, onClose, onSaved }) {
           </div>
         )}
       </div>
+      {confirmClearVideo && (
+        <ConfirmModal
+          message="¿Eliminar el archivo de video del servidor? Esta acción no se puede deshacer."
+          onConfirm={() => { clearVideoMut.mutate(); setConfirmClearVideo(false); }}
+          onCancel={() => setConfirmClearVideo(false)}
+          isPending={clearVideoMut.isPending}
+        />
+      )}
     </div>
   );
 }
@@ -233,6 +243,7 @@ function CategoryModal({ mode, category, onClose }) {
       : EMPTY_CAT
   );
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['categories'] });
 
@@ -290,7 +301,7 @@ function CategoryModal({ mode, category, onClose }) {
               <button
                 type="button"
                 className={`${styles.btnSecondary} ${styles.btnDanger}`}
-                onClick={() => removeMut.mutate()}
+                onClick={() => setConfirmDelete(true)}
                 disabled={removeMut.isPending}
               >
                 Eliminar
@@ -303,6 +314,14 @@ function CategoryModal({ mode, category, onClose }) {
           </div>
         </form>
       </div>
+      {confirmDelete && (
+        <ConfirmModal
+          message={`¿Eliminar la categoría "${category.nombre}"? Solo es posible si no tiene ejercicios.`}
+          onConfirm={() => removeMut.mutate()}
+          onCancel={() => setConfirmDelete(false)}
+          isPending={removeMut.isPending}
+        />
+      )}
     </div>
   );
 }
