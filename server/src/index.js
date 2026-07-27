@@ -26,6 +26,7 @@ app.use('/api/routine-blocks', routineRoutes.blocksRouter);
 app.use('/api/routine-exercises', routineRoutes.reRouter);
 app.use('/api/prescribed-sets', routineRoutes.setsRouter);
 app.use('/api/weight-entries', require('./modules/weight-entries/routes'));
+app.use('/api/metrics', require('./modules/metrics/routes'));
 
 // health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

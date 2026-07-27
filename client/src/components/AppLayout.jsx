@@ -8,6 +8,7 @@ const NAV = [
   { to: '/catalogo', label: 'Catálogo', roles: ['admin', 'profesor'] },
   { to: '/rutinas', label: 'Rutinas', roles: ['admin', 'profesor'] },
   { to: '/rutina', label: 'Mi Rutina', roles: ['alumno'] },
+  { to: '/metricas', label: 'Métricas', roles: ['admin', 'profesor', 'alumno'] },
 ];
 
 export default function AppLayout({ children }) {

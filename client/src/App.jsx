@@ -9,6 +9,7 @@ import Catalogo from './pages/Catalogo';
 import Rutinas from './pages/Rutinas';
 import RutinaBuilder from './pages/RutinaBuilder';
 import RutinaAlumno from './pages/RutinaAlumno';
+import Metricas from './pages/Metricas';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -39,6 +40,10 @@ export default function App() {
 
             <Route element={<ProtectedRoute roles={['alumno']} />}>
               <Route path="/rutina" element={<RutinaAlumno />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={['admin', 'profesor', 'alumno']} />}>
+              <Route path="/metricas" element={<Metricas />} />
             </Route>
 
             <Route path="/sin-acceso" element={<div style={{ color: '#eaeaea', padding: '2rem' }}>Sin acceso a esta sección.</div>} />
