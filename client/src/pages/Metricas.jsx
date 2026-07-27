@@ -137,7 +137,15 @@ function ProgressTab({ alumnoId }) {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
                 <XAxis dataKey="fecha" stroke={CHART.axis} tick={{ fontSize: 11 }} />
-                <YAxis stroke={CHART.axis} tick={{ fontSize: 11 }} unit=" kg" />
+                <YAxis
+                  stroke={CHART.axis}
+                  tick={{ fontSize: 11 }}
+                  unit=" kg"
+                  domain={[
+                    (dataMin) => Math.floor(dataMin * 0.92),
+                    (dataMax) => Math.ceil(dataMax * 1.05),
+                  ]}
+                />
                 <Tooltip {...tooltipStyle} formatter={(v) => [`${v} kg`]} />
                 <Legend wrapperStyle={{ fontSize: 12, color: CHART.axis }} />
                 {labels.map((label, i) => {
