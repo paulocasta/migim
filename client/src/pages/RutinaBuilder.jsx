@@ -347,6 +347,8 @@ export default function RutinaBuilder() {
   const [newDayLabel, setNewDayLabel] = useState('');
   const [addingDay, setAddingDay] = useState(false);
   const [confirmDeleteDay, setConfirmDeleteDay] = useState(null); // day object | null
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
 
   const addDayMut = useMutation({
     mutationFn: () => routinesApi.createDay(id, { etiqueta: newDayLabel, orden: (routine?.days?.length ?? 0) }),
@@ -371,6 +373,11 @@ export default function RutinaBuilder() {
     onSuccess: invalidate,
   });
 
+  const renameMut = useMutation({
+    mutationFn: () => routinesApi.update(id, { ...routine, nombre: nameValue }),
+    onSuccess: () => { invalidate(); setEditingName(false); },
+  });
+
   if (isLoading) return <AppLayout><p className={styles.msg}>Cargando rutina...</p></AppLayout>;
   if (error) return <AppLayout><p className={styles.msgError}>Error al cargar la rutina.</p></AppLayout>;
 
@@ -383,7 +390,33 @@ export default function RutinaBuilder() {
       <div className={styles.builderHeader}>
         <button className={styles.backBtn} onClick={() => navigate('/rutinas')}>← Rutinas</button>
         <div className={styles.headerInfo}>
-          <h1 className={styles.routineTitle}>{routine.nombre}</h1>
+          {editingName ? (
+            <div className={styles.nameEditRow}>
+              <input
+                className={styles.nameInput}
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && nameValue.trim().length >= 2 && renameMut.mutate()}
+                autoFocus
+                minLength={2}
+              />
+              <button
+                className={styles.btnIcon}
+                onClick={() => renameMut.mutate()}
+                disabled={renameMut.isPending || nameValue.trim().length < 2}
+              >✓</button>
+              <button className={styles.btnIconGhost} onClick={() => setEditingName(false)}>✕</button>
+            </div>
+          ) : (
+            <h1 className={styles.routineTitle}>
+              {routine.nombre}
+              <button
+                className={styles.btnIconGhost}
+                onClick={() => { setNameValue(routine.nombre); setEditingName(true); }}
+                title="Editar nombre"
+              >✎</button>
+            </h1>
+          )}
           <div className={styles.headerMeta}>
             <span className={styles.metaItem}>👤 {routine.alumno_nombre}</span>
             <span className={styles.metaItem}>📅 {routine.period_type} · {new Date(routine.start_date).toLocaleDateString('es-AR')}</span>
