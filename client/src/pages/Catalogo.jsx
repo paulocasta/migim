@@ -7,7 +7,7 @@ import { exercisesApi } from '../api/exercises';
 import { getEmbedUrl, hasVideo } from '../utils/video';
 import styles from './Catalogo.module.css';
 
-const EMPTY_EX = { category_id: '', nombre: '', descripcion: '', video_url: '' };
+const EMPTY_EX = { category_id: '', nombre: '', descripcion: '', video_url: '', requiere_peso: true };
 const EMPTY_CAT = { nombre: '', orden: '' };
 
 // ── Video Player ──────────────────────────────────────────────────────────────
@@ -48,6 +48,7 @@ function ExerciseModal({ mode, exercise, categories, onClose, onSaved }) {
           nombre: exercise.nombre,
           descripcion: exercise.descripcion || '',
           video_url: exercise.video_url || '',
+          requiere_peso: exercise.requiere_peso,
         }
       : { ...EMPTY_EX }
   );
@@ -81,7 +82,8 @@ function ExerciseModal({ mode, exercise, categories, onClose, onSaved }) {
   });
 
   function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    const { name, type, value, checked } = e.target;
+    setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
   }
 
   function handleSubmit(e) {
@@ -178,6 +180,15 @@ function ExerciseModal({ mode, exercise, categories, onClose, onSaved }) {
                 onChange={handleChange}
                 placeholder="https://www.youtube.com/watch?v=..."
               />
+            </label>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                name="requiere_peso"
+                checked={form.requiere_peso}
+                onChange={handleChange}
+              />
+              Requiere peso (desmarcá para ejercicios sin carga, ej. movilidad)
             </label>
             {formError && <p className={styles.formError}>{formError}</p>}
             <div className={styles.formActions}>
@@ -404,6 +415,9 @@ export default function Catalogo() {
           <button key={ex.id} className={styles.exCard} onClick={() => openViewExercise(ex)}>
             <div className={styles.exCardTop}>
               <span className={styles.catTag}>{ex.category_nombre}</span>
+              {!ex.requiere_peso && (
+                <span className={styles.noWeightTag} title="No requiere peso">Sin peso</span>
+              )}
               {hasVideo(ex) && (
                 <span className={styles.videoTag} title="Tiene video">▶</span>
               )}

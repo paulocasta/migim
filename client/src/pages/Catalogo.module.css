@@ -112,6 +112,14 @@
   border-radius: 4px;
 }
 
+.noWeightTag {
+  font-size: 0.7rem;
+  background: rgba(138, 43, 226, 0.15);
+  color: #b080ff;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
 .exName {
   font-size: 0.95rem;
   font-weight: 600;
@@ -293,6 +301,15 @@
 .input:focus { border-color: #e94560; }
 
 .textarea { resize: vertical; min-height: 72px; }
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #8892a4;
+}
+.checkboxLabel input { accent-color: #e94560; width: 1rem; height: 1rem; }
 
 .formError {
   color: #e94560;

@@ -45,9 +45,9 @@ function VideoToggle({ exercise }) {
 
 // ── Weight Input per Set ──────────────────────────────────────────────────────
 
-function WeightInput({ set, existingEntry, fecha, onSaved }) {
+function WeightInput({ set, existingEntry, fecha, onSaved, requierePeso = true }) {
   const qc = useQueryClient();
-  const [peso, setPeso] = useState(existingEntry ? String(existingEntry.peso) : '');
+  const [peso, setPeso] = useState(existingEntry?.peso != null ? String(existingEntry.peso) : '');
   const [saved, setSaved] = useState(!!existingEntry);
   const [error, setError] = useState('');
 
@@ -56,7 +56,7 @@ function WeightInput({ set, existingEntry, fecha, onSaved }) {
       weightEntriesApi.upsert({
         prescribed_set_id: set.id,
         fecha,
-        peso: Number(peso),
+        peso: peso === '' ? undefined : Number(peso),
       }),
     onSuccess: () => {
       setSaved(true);
@@ -68,7 +68,11 @@ function WeightInput({ set, existingEntry, fecha, onSaved }) {
   });
 
   function handleSave() {
-    if (!peso || isNaN(Number(peso)) || Number(peso) <= 0) {
+    if (peso !== '' && (isNaN(Number(peso)) || Number(peso) <= 0)) {
+      setError('Ingresá un peso válido');
+      return;
+    }
+    if (requierePeso && peso === '') {
       setError('Ingresá un peso válido');
       return;
     }
@@ -91,7 +95,7 @@ function WeightInput({ set, existingEntry, fecha, onSaved }) {
           type="number"
           min="0"
           step="0.5"
-          placeholder="0"
+          placeholder={requierePeso ? '0' : 'opcional'}
           value={peso}
           onChange={handleChange}
           onKeyDown={(e) => e.key === 'Enter' && handleSave()}
@@ -103,7 +107,7 @@ function WeightInput({ set, existingEntry, fecha, onSaved }) {
         onClick={handleSave}
         disabled={upsertMut.isPending}
       >
-        {upsertMut.isPending ? '…' : saved ? '✓' : 'Guardar'}
+        {upsertMut.isPending ? '…' : saved ? '✓' : requierePeso ? 'Guardar' : 'Marcar hecho'}
       </button>
       {error && <span className={styles.inputErrMsg}>{error}</span>}
     </div>
@@ -142,6 +146,7 @@ function ExerciseCard({ exercise, entriesMap, fecha }) {
               set={s}
               existingEntry={entriesMap[s.id]}
               fecha={fecha}
+              requierePeso={exercise.requiere_peso !== false}
             />
           ))}
         </div>

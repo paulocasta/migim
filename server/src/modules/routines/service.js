@@ -86,7 +86,7 @@ async function getTree(id) {
     const blockIds = blocks.map((b) => b.id);
     const { rows: exRows } = await db.query(
       `SELECT re.*, e.nombre AS exercise_nombre, e.video_url, e.video_file_path,
-              c.nombre AS category_nombre
+              e.requiere_peso, c.nombre AS category_nombre
        FROM routine_exercises re
        JOIN exercises e ON re.exercise_id = e.id
        JOIN categories c ON e.category_id = c.id

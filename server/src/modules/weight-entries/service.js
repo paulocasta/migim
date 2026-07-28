@@ -26,7 +26,7 @@ async function upsert({ prescribed_set_id, fecha, peso, nota }, alumnoId) {
      ON CONFLICT (prescribed_set_id, alumno_id, fecha)
      DO UPDATE SET peso = EXCLUDED.peso, nota = EXCLUDED.nota
      RETURNING *`,
-    [prescribed_set_id, alumnoId, fecha, peso, nota || null]
+    [prescribed_set_id, alumnoId, fecha, peso ?? null, nota || null]
   );
   return rows[0];
 }

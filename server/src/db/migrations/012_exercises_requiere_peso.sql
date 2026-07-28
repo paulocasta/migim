@@ -1,0 +1,2 @@
+ALTER TABLE exercises ADD COLUMN requiere_peso BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE weight_entries ALTER COLUMN peso DROP NOT NULL;

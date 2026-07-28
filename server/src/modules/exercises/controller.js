@@ -7,6 +7,7 @@ const exerciseSchema = z.object({
   nombre: z.string().min(2, 'Nombre mínimo 2 caracteres'),
   descripcion: z.string().optional(),
   video_url: z.string().url().optional().or(z.literal('')),
+  requiere_peso: z.boolean().default(true),
 });
 
 function badRequest(res, message) {

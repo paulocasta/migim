@@ -26,20 +26,20 @@ async function getById(id) {
   return rows[0];
 }
 
-async function create({ category_id, nombre, descripcion, video_url }, createdBy) {
+async function create({ category_id, nombre, descripcion, video_url, requiere_peso }, createdBy) {
   const { rows } = await db.query(
-    `INSERT INTO exercises(category_id, nombre, descripcion, video_url, created_by)
-     VALUES($1, $2, $3, $4, $5) RETURNING *`,
-    [category_id, nombre, descripcion || null, video_url || null, createdBy]
+    `INSERT INTO exercises(category_id, nombre, descripcion, video_url, requiere_peso, created_by)
+     VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,
+    [category_id, nombre, descripcion || null, video_url || null, requiere_peso, createdBy]
   );
   return rows[0];
 }
 
-async function update(id, { category_id, nombre, descripcion, video_url }) {
+async function update(id, { category_id, nombre, descripcion, video_url, requiere_peso }) {
   const { rows } = await db.query(
-    `UPDATE exercises SET category_id=$1, nombre=$2, descripcion=$3, video_url=$4
-     WHERE id=$5 RETURNING *`,
-    [category_id, nombre, descripcion || null, video_url || null, id]
+    `UPDATE exercises SET category_id=$1, nombre=$2, descripcion=$3, video_url=$4, requiere_peso=$5
+     WHERE id=$6 RETURNING *`,
+    [category_id, nombre, descripcion || null, video_url || null, requiere_peso, id]
   );
   if (!rows[0]) throw Object.assign(new Error('Ejercicio no encontrado'), { status: 404 });
   return rows[0];
