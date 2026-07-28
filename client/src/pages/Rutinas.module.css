@@ -98,4 +98,6 @@
 .input { background: #0f3460; border: 1.5px solid #2a4a7f; border-radius: 7px; color: #eaeaea; font-size: 0.95rem; padding: 0.6rem 0.85rem; outline: none; transition: border-color 0.15s; width: 100%; box-sizing: border-box; }
 .input:focus { border-color: #e94560; }
 .formError { color: #e94560; font-size: 0.85rem; margin: 0; }
+
+.weekPreview { color: #5599ff; font-size: 0.82rem; margin: -0.5rem 0 0; }
 .formActions { display: flex; gap: 0.6rem; justify-content: flex-end; }

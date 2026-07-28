@@ -70,17 +70,17 @@ async function remove(req, res, next) {
 // ── Days ──────────────────────────────────────────────────────────────────────
 async function createDay(req, res, next) {
   try {
-    const { etiqueta, orden } = req.body;
+    const { etiqueta, orden, fecha } = req.body;
     if (!etiqueta) return bad(res, 'etiqueta requerida');
-    res.status(201).json({ day: await svc.createDay(Number(req.params.routineId), { etiqueta, orden }) });
+    res.status(201).json({ day: await svc.createDay(Number(req.params.routineId), { etiqueta, orden, fecha }) });
   } catch (err) { next(err); }
 }
 
 async function updateDay(req, res, next) {
   try {
-    const { etiqueta, orden } = req.body;
+    const { etiqueta, orden, fecha } = req.body;
     if (!etiqueta) return bad(res, 'etiqueta requerida');
-    res.json({ day: await svc.updateDay(Number(req.params.dayId), { etiqueta, orden }) });
+    res.json({ day: await svc.updateDay(Number(req.params.dayId), { etiqueta, orden, fecha }) });
   } catch (err) { next(err); }
 }
 

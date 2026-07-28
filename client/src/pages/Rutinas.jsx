@@ -10,6 +10,37 @@ import styles from './Rutinas.module.css';
 
 const EMPTY = { alumno_id: '', nombre: '', period_type: 'semanal', start_date: '' };
 
+function addDays(dateStr, n) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function mondayOf(dateStr) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  const day = d.getUTCDay(); // 0=domingo..6=sábado
+  const offset = day === 0 ? 6 : day - 1;
+  return addDays(dateStr, -offset);
+}
+
+function fmtShort(dateStr) {
+  return new Date(`${dateStr}T00:00:00Z`).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+}
+
+function WeekPreview({ startDate, periodType }) {
+  if (!startDate) return null;
+  const monday = mondayOf(startDate);
+  const numWeeks = periodType === 'mensual' ? 4 : 1;
+  const lastSunday = addDays(monday, numWeeks * 7 - 1);
+  return (
+    <p className={styles.weekPreview}>
+      {numWeeks === 1
+        ? `Semana: ${fmtShort(monday)} – ${fmtShort(lastSunday)}`
+        : `Semana 1: ${fmtShort(monday)} – ${fmtShort(addDays(monday, 6))} (4 semanas, hasta ${fmtShort(lastSunday)})`}
+    </p>
+  );
+}
+
 function PeriodBadge({ type }) {
   return (
     <span className={`${styles.badge} ${type === 'mensual' ? styles.badgeMensual : styles.badgeSemanal}`}>
@@ -172,6 +203,7 @@ export default function Rutinas() {
                 Fecha de inicio
                 <input className={styles.input} type="date" name="start_date" value={form.start_date} onChange={handleChange} required />
               </label>
+              <WeekPreview startDate={form.start_date} periodType={form.period_type} />
               {formError && <p className={styles.formError}>{formError}</p>}
               <div className={styles.formActions}>
                 <button type="button" className={styles.btnSecondary} onClick={() => setModal(false)}>Cancelar</button>

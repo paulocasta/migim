@@ -9,6 +9,24 @@ import styles from './RutinaBuilder.module.css';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function fmtShort(dateStr) {
+  return new Date(dateStr).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
+}
+
+function chunkDays(days) {
+  const chunks = [];
+  for (let i = 0; i < days.length; i += 7) chunks.push(days.slice(i, i + 7));
+  return chunks;
+}
+
+function weekRange(week) {
+  const fechas = week.map((d) => d.fecha).filter(Boolean);
+  if (!fechas.length) return '';
+  const min = fechas.reduce((a, b) => (a < b ? a : b));
+  const max = fechas.reduce((a, b) => (a > b ? a : b));
+  return ` (${fmtShort(min)}–${fmtShort(max)})`;
+}
+
 function useRoutineTree(id) {
   return useQuery({
     queryKey: ['routine', id],
@@ -344,18 +362,16 @@ export default function RutinaBuilder() {
 
   const { data: routine, isLoading, error } = useRoutineTree(id);
   const [selectedDayId, setSelectedDayId] = useState(null);
-  const [newDayLabel, setNewDayLabel] = useState('');
   const [addingDay, setAddingDay] = useState(false);
   const [confirmDeleteDay, setConfirmDeleteDay] = useState(null); // day object | null
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
 
   const addDayMut = useMutation({
-    mutationFn: () => routinesApi.createDay(id, { etiqueta: newDayLabel, orden: (routine?.days?.length ?? 0) }),
+    mutationFn: (etiqueta) => routinesApi.createDay(id, { etiqueta, orden: (routine?.days?.length ?? 0) }),
     onSuccess: (day) => {
       invalidate();
       setSelectedDayId(day.id);
-      setNewDayLabel('');
       setAddingDay(false);
     },
   });
@@ -432,49 +448,48 @@ export default function RutinaBuilder() {
       </div>
 
       {/* Day tabs */}
-      <div className={styles.dayTabs}>
-        {routine.days.map((d) => (
-          <div key={d.id} className={styles.dayTabWrap}>
-            <button
-              className={`${styles.dayTab} ${d.id === effectiveSelectedId ? styles.dayTabActive : ''}`}
-              onClick={() => setSelectedDayId(d.id)}
-            >
-              {d.etiqueta}
-            </button>
-            <button
-              className={styles.removeDayBtn}
-              onClick={() => setConfirmDeleteDay(d)}
-              disabled={removeDayMut.isPending}
-              title="Eliminar día"
-            >×</button>
-          </div>
-        ))}
+      {chunkDays(routine.days).map((week, wi) => (
+        <div key={wi} className={styles.dayTabs}>
+          {chunkDays(routine.days).length > 1 && (
+            <span className={styles.weekLabel}>Semana {wi + 1}{weekRange(week)}</span>
+          )}
+          {week.map((d) => (
+            <div key={d.id} className={styles.dayTabWrap}>
+              <button
+                className={`${styles.dayTab} ${d.id === effectiveSelectedId ? styles.dayTabActive : ''}`}
+                onClick={() => setSelectedDayId(d.id)}
+              >
+                {d.etiqueta}
+                {d.fecha && <span className={styles.dayTabFecha}> {fmtShort(d.fecha)}</span>}
+              </button>
+              <button
+                className={styles.removeDayBtn}
+                onClick={() => setConfirmDeleteDay(d)}
+                disabled={removeDayMut.isPending}
+                title="Eliminar día"
+              >×</button>
+            </div>
+          ))}
+        </div>
+      ))}
 
+      <div className={styles.dayTabs}>
         {addingDay ? (
           <div className={styles.addDayPanel}>
             <div className={styles.daySuggestions}>
               {['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map((d) => (
                 <button
                   key={d}
-                  className={`${styles.daySugBtn} ${newDayLabel === d ? styles.daySugBtnActive : ''}`}
-                  onClick={() => setNewDayLabel(d)}
+                  className={styles.daySugBtn}
+                  onClick={() => addDayMut.mutate(d)}
+                  disabled={addDayMut.isPending}
                   type="button"
                 >
                   {d}
                 </button>
               ))}
             </div>
-            <div className={styles.addDayRow}>
-              <input
-                className={styles.dayInput}
-                value={newDayLabel}
-                onChange={(e) => setNewDayLabel(e.target.value)}
-                placeholder="O escribí un nombre custom…"
-                autoFocus
-              />
-              <button className={styles.btnIcon} onClick={() => addDayMut.mutate()} disabled={!newDayLabel || addDayMut.isPending}>✓</button>
-              <button className={styles.btnIconGhost} onClick={() => { setAddingDay(false); setNewDayLabel(''); }}>✕</button>
-            </div>
+            <button className={styles.btnIconGhost} onClick={() => setAddingDay(false)}>✕ Cancelar</button>
           </div>
         ) : (
           <button className={styles.addDayBtn} onClick={() => setAddingDay(true)}>+ Día</button>

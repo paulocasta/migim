@@ -6,6 +6,39 @@ function notFound(msg) {
   return Object.assign(new Error(msg), { status: 404 });
 }
 
+const WEEKDAY_LABELS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+// 'YYYY-MM-DD' + n días → 'YYYY-MM-DD' (aritmética en UTC, sin corrimientos por huso horario)
+function addDays(dateStr, n) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// 'YYYY-MM-DD' → 'YYYY-MM-DD' del lunes de esa semana (semana ISO: lunes a domingo)
+function mondayOf(dateStr) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  const day = d.getUTCDay(); // 0=domingo..6=sábado
+  const offset = day === 0 ? 6 : day - 1;
+  return addDays(dateStr, -offset);
+}
+
+// Genera Lunes..Domingo × numWeeks, con fecha real, arrancando en startMonday
+function buildWeekDays(startMonday, numWeeks) {
+  const days = [];
+  for (let w = 0; w < numWeeks; w++) {
+    const weekMonday = addDays(startMonday, w * 7);
+    WEEKDAY_LABELS.forEach((etiqueta, i) => {
+      days.push({
+        etiqueta,
+        fecha: addDays(weekMonday, i),
+        orden: w * 7 + i,
+      });
+    });
+  }
+  return days;
+}
+
 // ── Block types ───────────────────────────────────────────────────────────────
 
 async function listBlockTypes() {
@@ -129,12 +162,28 @@ async function getTree(id) {
 }
 
 async function create({ alumno_id, nombre, period_type, start_date }, createdBy) {
+  const anchorMonday = mondayOf(start_date);
   const { rows } = await db.query(
     `INSERT INTO routines(alumno_id, nombre, period_type, start_date, created_by)
      VALUES($1,$2,$3,$4,$5) RETURNING *`,
-    [alumno_id, nombre, period_type, start_date, createdBy]
+    [alumno_id, nombre, period_type, anchorMonday, createdBy]
   );
-  return rows[0];
+  const routine = rows[0];
+
+  const weekDays = buildWeekDays(anchorMonday, period_type === 'mensual' ? 4 : 1);
+  const values = [];
+  const params = [];
+  weekDays.forEach(({ etiqueta, fecha, orden }, i) => {
+    const base = i * 4;
+    values.push(`($${base + 1},$${base + 2},$${base + 3},$${base + 4})`);
+    params.push(routine.id, etiqueta, fecha, orden);
+  });
+  await db.query(
+    `INSERT INTO routine_days(routine_id, etiqueta, fecha, orden) VALUES ${values.join(',')}`,
+    params
+  );
+
+  return routine;
 }
 
 async function update(id, { nombre, period_type, start_date, activo }) {
@@ -154,18 +203,18 @@ async function remove(id) {
 
 // ── Days ──────────────────────────────────────────────────────────────────────
 
-async function createDay(routineId, { etiqueta, orden }) {
+async function createDay(routineId, { etiqueta, orden, fecha }) {
   const { rows } = await db.query(
-    'INSERT INTO routine_days(routine_id, etiqueta, orden) VALUES($1,$2,$3) RETURNING *',
-    [routineId, etiqueta, orden ?? 0]
+    'INSERT INTO routine_days(routine_id, etiqueta, orden, fecha) VALUES($1,$2,$3,$4) RETURNING *',
+    [routineId, etiqueta, orden ?? 0, fecha ?? null]
   );
   return rows[0];
 }
 
-async function updateDay(id, { etiqueta, orden }) {
+async function updateDay(id, { etiqueta, orden, fecha }) {
   const { rows } = await db.query(
-    'UPDATE routine_days SET etiqueta=$1, orden=$2 WHERE id=$3 RETURNING *',
-    [etiqueta, orden ?? 0, id]
+    'UPDATE routine_days SET etiqueta=$1, orden=$2, fecha=$3 WHERE id=$4 RETURNING *',
+    [etiqueta, orden ?? 0, fecha ?? null, id]
   );
   if (!rows[0]) throw notFound('Día no encontrado');
   return rows[0];
