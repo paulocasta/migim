@@ -7,9 +7,12 @@ async function loggedExercises(alumnoId) {
      FROM weight_entries we
      JOIN prescribed_sets ps ON we.prescribed_set_id = ps.id
      JOIN routine_exercises re ON ps.routine_exercise_id = re.id
+     JOIN routine_blocks rb ON re.routine_block_id = rb.id
+     JOIN routine_days rd ON rb.routine_day_id = rd.id
+     JOIN routines r ON rd.routine_id = r.id
      JOIN exercises e ON re.exercise_id = e.id
      JOIN categories c ON e.category_id = c.id
-     WHERE we.alumno_id = $1
+     WHERE we.alumno_id = $1 AND r.activo = true
      ORDER BY c.nombre, e.nombre`,
     [alumnoId]
   );
@@ -30,7 +33,7 @@ async function progress(alumnoId, exerciseId) {
      JOIN routine_blocks rb ON re.routine_block_id = rb.id
      JOIN routine_days rd ON rb.routine_day_id = rd.id
      JOIN routines r ON rd.routine_id = r.id
-     WHERE we.alumno_id = $1 AND re.exercise_id = $2
+     WHERE we.alumno_id = $1 AND re.exercise_id = $2 AND r.activo = true
      ORDER BY r.start_date ASC, ps.reps DESC, ps.sets_count DESC`,
     [alumnoId, exerciseId]
   );
@@ -50,7 +53,7 @@ async function volume(alumnoId, groupBy = 'session') {
      JOIN routine_blocks rb ON re.routine_block_id = rb.id
      JOIN routine_days rd ON rb.routine_day_id = rd.id
      JOIN routines r ON rd.routine_id = r.id
-     WHERE we.alumno_id = $1
+     WHERE we.alumno_id = $1 AND r.activo = true
      GROUP BY 1
      ORDER BY 1 ASC`,
     [alumnoId]
@@ -75,7 +78,7 @@ async function prs(alumnoId) {
      JOIN routines r ON rd.routine_id = r.id
      JOIN exercises e ON re.exercise_id = e.id
      JOIN categories c ON e.category_id = c.id
-     WHERE we.alumno_id = $1
+     WHERE we.alumno_id = $1 AND r.activo = true
      ORDER BY e.id, we.peso DESC, r.start_date DESC`,
     [alumnoId]
   );
@@ -85,7 +88,7 @@ async function prs(alumnoId) {
 // Asistencia: rutinas "entrenadas" en rango (por fecha de inicio) + cálculo de racha
 async function attendance(alumnoId, from, to) {
   const params = [alumnoId];
-  const conds = ['we.alumno_id = $1'];
+  const conds = ['we.alumno_id = $1', 'r.activo = true'];
   if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
   if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
 
