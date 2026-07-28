@@ -43,7 +43,7 @@ async function volume(alumnoId, groupBy = 'session') {
   const { rows } = await db.query(
     `SELECT
        ${trunc} AS fecha,
-       ROUND(SUM(ps.sets_count * ps.reps * we.peso), 1)::numeric AS volumen
+       ROUND(SUM(we.peso), 1)::numeric AS volumen
      FROM weight_entries we
      JOIN prescribed_sets ps ON we.prescribed_set_id = ps.id
      JOIN routine_exercises re ON ps.routine_exercise_id = re.id
