@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthContext';
 import AppLayout from '../components/AppLayout';
+import ConfirmModal from '../components/ConfirmModal';
 import { routinesApi } from '../api/routines';
 import { usersApi } from '../api/users';
 import styles from './Rutinas.module.css';
@@ -26,6 +27,7 @@ export default function Rutinas() {
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [formError, setFormError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const { data: routines = [], isLoading } = useQuery({
     queryKey: ['routines', filterAlumnoId],
@@ -45,6 +47,14 @@ export default function Rutinas() {
       navigate(`/rutinas/${routine.id}`);
     },
     onError: (err) => setFormError(err.response?.data?.error?.message || 'Error al crear'),
+  });
+
+  const removeMut = useMutation({
+    mutationFn: routinesApi.remove,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['routines'] });
+      setConfirmDelete(null);
+    },
   });
 
   function handleChange(e) {
@@ -101,6 +111,16 @@ export default function Rutinas() {
                 <span className={`${styles.badge} ${r.activo ? styles.badgeActivo : styles.badgeInactivo}`}>
                   {r.activo ? 'Activa' : 'Inactiva'}
                 </span>
+                <span
+                  className={styles.deleteBtn}
+                  role="button"
+                  tabIndex={0}
+                  title="Eliminar rutina"
+                  onClick={(e) => { e.stopPropagation(); setConfirmDelete(r); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setConfirmDelete(r); } }}
+                >
+                  ×
+                </span>
               </div>
             </div>
             <p className={styles.cardDate}>
@@ -110,6 +130,15 @@ export default function Rutinas() {
           </button>
         ))}
       </div>
+
+      {confirmDelete && (
+        <ConfirmModal
+          message={`¿Eliminar la rutina "${confirmDelete.nombre}" de ${confirmDelete.alumno_nombre}? Se borrarán todos sus días, bloques, ejercicios y pesos cargados.`}
+          onConfirm={() => removeMut.mutate(confirmDelete.id)}
+          onCancel={() => setConfirmDelete(null)}
+          isPending={removeMut.isPending}
+        />
+      )}
 
       {modal && (
         <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && setModal(false)}>
