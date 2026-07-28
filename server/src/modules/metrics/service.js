@@ -20,7 +20,12 @@ async function loggedExercises(alumnoId) {
 }
 
 // Progreso: fecha (inicio de rutina) → peso_max / peso_avg por ejercicio
-async function progress(alumnoId, exerciseId) {
+async function progress(alumnoId, exerciseId, from, to) {
+  const params = [alumnoId, exerciseId];
+  const conds = ['we.alumno_id = $1', 're.exercise_id = $2', 'r.activo = true'];
+  if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
+  if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
+
   const { rows } = await db.query(
     `SELECT
        r.start_date AS fecha,
@@ -33,16 +38,21 @@ async function progress(alumnoId, exerciseId) {
      JOIN routine_blocks rb ON re.routine_block_id = rb.id
      JOIN routine_days rd ON rb.routine_day_id = rd.id
      JOIN routines r ON rd.routine_id = r.id
-     WHERE we.alumno_id = $1 AND re.exercise_id = $2 AND r.activo = true
+     WHERE ${conds.join(' AND ')}
      ORDER BY r.start_date ASC, ps.reps DESC, ps.sets_count DESC`,
-    [alumnoId, exerciseId]
+    params
   );
   return rows;
 }
 
 // Volumen: sets_count × reps × peso — por sesión (rutina) o por semana, según fecha de inicio de rutina
-async function volume(alumnoId, groupBy = 'session') {
+async function volume(alumnoId, groupBy = 'session', from, to) {
   const trunc = groupBy === 'week' ? `DATE_TRUNC('week', r.start_date)` : 'r.start_date';
+  const params = [alumnoId];
+  const conds = ['we.alumno_id = $1', 'r.activo = true'];
+  if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
+  if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
+
   const { rows } = await db.query(
     `SELECT
        ${trunc} AS fecha,
@@ -53,16 +63,21 @@ async function volume(alumnoId, groupBy = 'session') {
      JOIN routine_blocks rb ON re.routine_block_id = rb.id
      JOIN routine_days rd ON rb.routine_day_id = rd.id
      JOIN routines r ON rd.routine_id = r.id
-     WHERE we.alumno_id = $1 AND r.activo = true
+     WHERE ${conds.join(' AND ')}
      GROUP BY 1
      ORDER BY 1 ASC`,
-    [alumnoId]
+    params
   );
   return rows;
 }
 
 // PRs: peso máximo por ejercicio, con la fecha de inicio de la rutina donde se logró
-async function prs(alumnoId) {
+async function prs(alumnoId, from, to) {
+  const params = [alumnoId];
+  const conds = ['we.alumno_id = $1', 'r.activo = true'];
+  if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
+  if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
+
   const { rows } = await db.query(
     `SELECT DISTINCT ON (e.id)
        e.id AS exercise_id,
@@ -78,9 +93,9 @@ async function prs(alumnoId) {
      JOIN routines r ON rd.routine_id = r.id
      JOIN exercises e ON re.exercise_id = e.id
      JOIN categories c ON e.category_id = c.id
-     WHERE we.alumno_id = $1 AND r.activo = true
+     WHERE ${conds.join(' AND ')}
      ORDER BY e.id, we.peso DESC, r.start_date DESC`,
-    [alumnoId]
+    params
   );
   return rows;
 }

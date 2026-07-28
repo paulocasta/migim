@@ -35,6 +35,76 @@ function fmtDateFull(d) {
   return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+// ── Period filter (Todo / Semana / Mes) ─────────────────────────────────────────
+
+function addDaysISO(dateStr, n) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function todayISO() {
+  const d = new Date();
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d - offset).toISOString().slice(0, 10);
+}
+
+function isoWeekValue(dateStr) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  const day = d.getUTCDay();
+  const monday = addDaysISO(dateStr, day === 0 ? -6 : 1 - day);
+  const jan4 = new Date(Date.UTC(new Date(`${monday}T00:00:00Z`).getUTCFullYear(), 0, 4));
+  const jan4Monday = addDaysISO(jan4.toISOString().slice(0, 10), jan4.getUTCDay() === 0 ? -6 : 1 - jan4.getUTCDay());
+  const weekNum = Math.round((new Date(`${monday}T00:00:00Z`) - new Date(`${jan4Monday}T00:00:00Z`)) / (7 * 86400000)) + 1;
+  return `${monday.slice(0, 4)}-W${String(weekNum).padStart(2, '0')}`;
+}
+
+function weekRangeFromValue(value) {
+  if (!value) return null;
+  const [yearStr, weekStr] = value.split('-W');
+  const year = Number(yearStr);
+  const week = Number(weekStr);
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Monday = addDaysISO(jan4.toISOString().slice(0, 10), jan4.getUTCDay() === 0 ? -6 : 1 - jan4.getUTCDay());
+  const from = addDaysISO(jan4Monday, (week - 1) * 7);
+  return { from, to: addDaysISO(from, 6) };
+}
+
+function monthRangeFromValue(value) {
+  if (!value) return null;
+  const [year, month] = value.split('-').map(Number);
+  const from = `${value}-01`;
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return { from, to: `${value}-${String(lastDay).padStart(2, '0')}` };
+}
+
+function PeriodFilter({ mode, setMode, value, setValue }) {
+  return (
+    <div className={`${styles.controls} ${styles.periodFilter}`}>
+      <span className={styles.ctrlLabel}>Período</span>
+      <div className={styles.toggle}>
+        {[{ v: 'all', l: 'Todo' }, { v: 'week', l: 'Semana' }, { v: 'month', l: 'Mes' }].map(({ v, l }) => (
+          <button
+            key={v}
+            className={`${styles.toggleBtn} ${mode === v ? styles.toggleBtnActive : ''}`}
+            onClick={() => {
+              setMode(v);
+              if (v === 'week') setValue(isoWeekValue(todayISO()));
+              else if (v === 'month') setValue(todayISO().slice(0, 7));
+            }}
+          >{l}</button>
+        ))}
+      </div>
+      {mode === 'week' && (
+        <input className={styles.dateInput} type="week" value={value} onChange={(e) => setValue(e.target.value)} />
+      )}
+      {mode === 'month' && (
+        <input className={styles.dateInput} type="month" value={value} onChange={(e) => setValue(e.target.value)} />
+      )}
+    </div>
+  );
+}
+
 // ── Tabs ───────────────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -71,7 +141,7 @@ function buildProgressChart(raw) {
   return { labels, rows: [...byDate.values()] };
 }
 
-function ProgressTab({ alumnoId }) {
+function ProgressTab({ alumnoId, from, to }) {
   const [selectedExId, setSelectedExId] = useState('');
 
   const { data: exercises = [] } = useQuery({
@@ -81,8 +151,8 @@ function ProgressTab({ alumnoId }) {
   });
 
   const { data: raw = [], isLoading } = useQuery({
-    queryKey: ['metrics-progress', alumnoId, selectedExId],
-    queryFn: () => metricsApi.progress(selectedExId, alumnoId),
+    queryKey: ['metrics-progress', alumnoId, selectedExId, from, to],
+    queryFn: () => metricsApi.progress(selectedExId, alumnoId, from, to),
     enabled: !!selectedExId,
   });
 
@@ -160,12 +230,12 @@ function ProgressTab({ alumnoId }) {
 
 // ── Volume tab ─────────────────────────────────────────────────────────────────
 
-function VolumeTab({ alumnoId }) {
+function VolumeTab({ alumnoId, from, to }) {
   const [groupBy, setGroupBy] = useState('session');
 
   const { data: raw = [], isLoading } = useQuery({
-    queryKey: ['metrics-volume', alumnoId, groupBy],
-    queryFn: () => metricsApi.volume(groupBy, alumnoId),
+    queryKey: ['metrics-volume', alumnoId, groupBy, from, to],
+    queryFn: () => metricsApi.volume(groupBy, alumnoId, from, to),
   });
 
   const chartData = raw.map((d) => ({
@@ -222,10 +292,10 @@ function VolumeTab({ alumnoId }) {
 
 // ── PRs tab ────────────────────────────────────────────────────────────────────
 
-function PRsTab({ alumnoId }) {
+function PRsTab({ alumnoId, from, to }) {
   const { data: prs = [], isLoading } = useQuery({
-    queryKey: ['metrics-prs', alumnoId],
-    queryFn: () => metricsApi.prs(alumnoId),
+    queryKey: ['metrics-prs', alumnoId, from, to],
+    queryFn: () => metricsApi.prs(alumnoId, from, to),
   });
 
   const byCategory = prs.reduce((acc, pr) => {
@@ -266,14 +336,7 @@ function PRsTab({ alumnoId }) {
 
 // ── Attendance tab ─────────────────────────────────────────────────────────────
 
-function AttendanceTab({ alumnoId }) {
-  const [from, setFrom] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 89);
-    return d.toISOString().slice(0, 10);
-  });
-  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
-
+function AttendanceTab({ alumnoId, from, to }) {
   const { data, isLoading } = useQuery({
     queryKey: ['metrics-attendance', alumnoId, from, to],
     queryFn: () => metricsApi.attendance(from, to, alumnoId),
@@ -286,17 +349,6 @@ function AttendanceTab({ alumnoId }) {
 
   return (
     <div className={styles.tabContent}>
-      <div className={styles.controls}>
-        <div className={styles.dateRange}>
-          <label className={styles.ctrlLabel}>Desde</label>
-          <input className={styles.dateInput} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-        </div>
-        <div className={styles.dateRange}>
-          <label className={styles.ctrlLabel}>Hasta</label>
-          <input className={styles.dateInput} type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        </div>
-      </div>
-
       {isLoading && <p className={styles.hint}>Cargando...</p>}
 
       {!isLoading && data && (
@@ -344,6 +396,15 @@ export default function Metricas() {
   const { user } = useAuth();
   const [tab, setTab] = useState('progress');
   const [alumnoId, setAlumnoId] = useState('');
+  const [periodMode, setPeriodMode] = useState('all');
+  const [periodValue, setPeriodValue] = useState('');
+
+  const range =
+    periodMode === 'week' ? weekRangeFromValue(periodValue) :
+    periodMode === 'month' ? monthRangeFromValue(periodValue) :
+    null;
+  const from = range?.from;
+  const to = range?.to;
 
   const isStaff = user.role !== 'alumno';
   const targetAlumnoId = isStaff ? (alumnoId ? Number(alumnoId) : null) : undefined;
@@ -377,6 +438,8 @@ export default function Metricas() {
 
       {(!isStaff || alumnoId) && (
         <>
+          <PeriodFilter mode={periodMode} setMode={setPeriodMode} value={periodValue} setValue={setPeriodValue} />
+
           <div className={styles.tabs}>
             {TABS.map((t) => (
               <button
@@ -389,10 +452,10 @@ export default function Metricas() {
             ))}
           </div>
 
-          {tab === 'progress'    && <ProgressTab alumnoId={targetAlumnoId} />}
-          {tab === 'volume'      && <VolumeTab alumnoId={targetAlumnoId} />}
-          {tab === 'prs'         && <PRsTab alumnoId={targetAlumnoId} />}
-          {tab === 'attendance'  && <AttendanceTab alumnoId={targetAlumnoId} />}
+          {tab === 'progress'    && <ProgressTab alumnoId={targetAlumnoId} from={from} to={to} />}
+          {tab === 'volume'      && <VolumeTab alumnoId={targetAlumnoId} from={from} to={to} />}
+          {tab === 'prs'         && <PRsTab alumnoId={targetAlumnoId} from={from} to={to} />}
+          {tab === 'attendance'  && <AttendanceTab alumnoId={targetAlumnoId} from={from} to={to} />}
         </>
       )}
     </AppLayout>

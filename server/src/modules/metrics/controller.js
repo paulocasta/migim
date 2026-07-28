@@ -24,7 +24,7 @@ async function progress(req, res, next) {
     if (!alumnoId) return;
     const exerciseId = Number(req.query.exerciseId);
     if (!exerciseId) return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'exerciseId requerido' } });
-    res.json({ data: await svc.progress(alumnoId, exerciseId) });
+    res.json({ data: await svc.progress(alumnoId, exerciseId, req.query.from, req.query.to) });
   } catch (err) { next(err); }
 }
 
@@ -33,7 +33,7 @@ async function volume(req, res, next) {
     const alumnoId = resolveAlumnoId(req, res);
     if (!alumnoId) return;
     const groupBy = req.query.groupBy === 'week' ? 'week' : 'session';
-    res.json({ data: await svc.volume(alumnoId, groupBy) });
+    res.json({ data: await svc.volume(alumnoId, groupBy, req.query.from, req.query.to) });
   } catch (err) { next(err); }
 }
 
@@ -41,7 +41,7 @@ async function prs(req, res, next) {
   try {
     const alumnoId = resolveAlumnoId(req, res);
     if (!alumnoId) return;
-    res.json({ data: await svc.prs(alumnoId) });
+    res.json({ data: await svc.prs(alumnoId, req.query.from, req.query.to) });
   } catch (err) { next(err); }
 }
 

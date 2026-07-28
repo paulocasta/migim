@@ -95,6 +95,8 @@
 
 .ctrlSelect option { background: #16213e; }
 
+.periodFilter { margin-bottom: 1.25rem; }
+
 /* Session/week toggle */
 .toggle {
   display: flex;
