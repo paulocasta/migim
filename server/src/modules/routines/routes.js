@@ -18,6 +18,7 @@ routinesRouter.post('/', auth, staff, ctrl.create);
 routinesRouter.get('/:id', auth, ctrl.getTree);       // alumno con ownership check en controller
 routinesRouter.put('/:id', auth, staff, ctrl.update);
 routinesRouter.delete('/:id', auth, staff, ctrl.remove);
+routinesRouter.post('/:id/copy', auth, staff, ctrl.copy);
 routinesRouter.post('/:routineId/days', auth, staff, ctrl.createDay);
 
 // /api/routine-days

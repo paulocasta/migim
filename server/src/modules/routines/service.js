@@ -10,6 +10,22 @@ function forbidden(msg) {
   return Object.assign(new Error(msg), { status: 403 });
 }
 
+function badRequest(msg) {
+  return Object.assign(new Error(msg), { status: 400 });
+}
+
+// routine_days.fecha / routines.start_date vuelven de pg como Date (medianoche local),
+// no como string — hay que normalizar antes de usarlos con addDays/mondayOf (que operan sobre 'YYYY-MM-DD')
+function toDateStr(value) {
+  if (value instanceof Date) {
+    const y = value.getFullYear();
+    const m = String(value.getMonth() + 1).padStart(2, '0');
+    const d = String(value.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return String(value).slice(0, 10);
+}
+
 const WEEKDAY_LABELS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 // 'YYYY-MM-DD' + n días → 'YYYY-MM-DD' (aritmética en UTC, sin corrimientos por huso horario)
@@ -213,6 +229,70 @@ async function remove(id, { requesterId, requesterRole }) {
   await db.query('DELETE FROM routines WHERE id=$1', [id]);
 }
 
+async function copyRoutine(sourceId, { nombre, start_date }, { requesterId, requesterRole }) {
+  const source = await getTree(sourceId); // throws notFound si no existe
+  if (requesterRole !== 'admin' && source.created_by !== requesterId) {
+    throw forbidden('No tenés permiso para copiar esta rutina');
+  }
+
+  const newAnchorMonday = mondayOf(start_date);
+  const sourceMonday = toDateStr(source.start_date);
+  if (newAnchorMonday === sourceMonday) {
+    throw badRequest('Elegí una semana distinta a la de la rutina original');
+  }
+  const deltaDays = Math.round(
+    (new Date(`${newAnchorMonday}T00:00:00Z`) - new Date(`${sourceMonday}T00:00:00Z`)) / 86400000
+  );
+
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const { rows: [routine] } = await client.query(
+      `INSERT INTO routines(alumno_id, nombre, period_type, start_date, created_by, activo)
+       VALUES($1,$2,$3,$4,$5,true) RETURNING *`,
+      [source.alumno_id, nombre || `${source.nombre} (copia)`, source.period_type, newAnchorMonday, requesterId]
+    );
+
+    for (const day of source.days) {
+      const newFecha = day.fecha == null ? null : addDays(toDateStr(day.fecha), deltaDays);
+      const { rows: [newDay] } = await client.query(
+        'INSERT INTO routine_days(routine_id, etiqueta, fecha, orden) VALUES($1,$2,$3,$4) RETURNING id',
+        [routine.id, day.etiqueta, newFecha, day.orden]
+      );
+
+      for (const block of day.blocks) {
+        const { rows: [newBlock] } = await client.query(
+          'INSERT INTO routine_blocks(routine_day_id, block_type_id, orden) VALUES($1,$2,$3) RETURNING id',
+          [newDay.id, block.block_type_id, block.orden]
+        );
+
+        for (const ex of block.exercises) {
+          const { rows: [newEx] } = await client.query(
+            'INSERT INTO routine_exercises(routine_block_id, exercise_id, orden, notas) VALUES($1,$2,$3,$4) RETURNING id',
+            [newBlock.id, ex.exercise_id, ex.orden, ex.notas]
+          );
+
+          for (const set of ex.sets) {
+            await client.query(
+              'INSERT INTO prescribed_sets(routine_exercise_id, orden, sets_count, reps) VALUES($1,$2,$3,$4)',
+              [newEx.id, set.orden, set.sets_count, set.reps]
+            );
+          }
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+    return routine;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 // ── Days ──────────────────────────────────────────────────────────────────────
 
 async function createDay(routineId, { etiqueta, orden, fecha }) {
@@ -293,7 +373,7 @@ async function removeSet(id) {
 
 module.exports = {
   listBlockTypes,
-  listForAlumno, list, getTree, create, update, remove,
+  listForAlumno, list, getTree, create, update, remove, copyRoutine,
   createDay, updateDay, removeDay,
   createBlock, removeBlock,
   addExercise, removeExercise,

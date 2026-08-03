@@ -12,6 +12,7 @@ export const routinesApi = {
   create: (data) => api.post('/routines', data).then((r) => r.data.routine),
   update: (id, data) => api.put(`/routines/${id}`, data).then((r) => r.data.routine),
   remove: (id) => api.delete(`/routines/${id}`),
+  copy: (id, data) => api.post(`/routines/${id}/copy`, data).then((r) => r.data.routine),
 
   createDay: (routineId, data) =>
     api.post(`/routines/${routineId}/days`, data).then((r) => r.data.day),

@@ -79,6 +79,21 @@
 }
 .deleteBtn:hover { background: rgba(233,69,96,0.15); color: #e94560; }
 
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  color: #8892a4;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.copyBtn:hover { background: rgba(85,153,255,0.15); color: #5599ff; }
+
 /* Buttons */
 .btnPrimary { background: #e94560; color: #fff; border: none; border-radius: 7px; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
 .btnPrimary:hover:not(:disabled) { background: #c73652; }

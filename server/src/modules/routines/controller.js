@@ -54,6 +54,23 @@ async function create(req, res, next) {
   } catch (err) { next(err); }
 }
 
+const copySchema = z.object({
+  nombre: z.string().min(2).optional(),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha debe ser YYYY-MM-DD'),
+});
+
+async function copy(req, res, next) {
+  try {
+    const parsed = copySchema.safeParse(req.body);
+    if (!parsed.success) return bad(res, parsed.error.errors[0].message);
+    const routine = await svc.copyRoutine(Number(req.params.id), parsed.data, {
+      requesterId: req.user.id,
+      requesterRole: req.user.role,
+    });
+    res.status(201).json({ routine });
+  } catch (err) { next(err); }
+}
+
 async function update(req, res, next) {
   try {
     const { nombre, period_type, start_date, activo } = req.body;
@@ -151,7 +168,7 @@ async function removeSet(req, res, next) {
 
 module.exports = {
   listBlockTypes,
-  mine, list, getTree, create, update, remove,
+  mine, list, getTree, create, update, remove, copy,
   createDay, updateDay, removeDay,
   createBlock, removeBlock,
   addExercise, removeExercise,

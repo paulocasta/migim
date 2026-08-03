@@ -59,6 +59,9 @@ export default function Rutinas() {
   const [form, setForm] = useState(EMPTY);
   const [formError, setFormError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [copyModal, setCopyModal] = useState(null);
+  const [copyForm, setCopyForm] = useState({ nombre: '', start_date: '' });
+  const [copyError, setCopyError] = useState('');
 
   const { data: routines = [], isLoading } = useQuery({
     queryKey: ['routines', filterAlumnoId],
@@ -87,6 +90,22 @@ export default function Rutinas() {
       setConfirmDelete(null);
     },
   });
+
+  const copyMut = useMutation({
+    mutationFn: ({ id, data }) => routinesApi.copy(id, data),
+    onSuccess: (routine) => {
+      qc.invalidateQueries({ queryKey: ['routines'] });
+      setCopyModal(null);
+      navigate(`/rutinas/${routine.id}`);
+    },
+    onError: (err) => setCopyError(err.response?.data?.error?.message || 'Error al copiar'),
+  });
+
+  function openCopyModal(r) {
+    setCopyForm({ nombre: `${r.nombre} (copia)`, start_date: '' });
+    setCopyError('');
+    setCopyModal(r);
+  }
 
   function handleChange(e) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -141,6 +160,16 @@ export default function Rutinas() {
                 <PeriodBadge type={r.period_type} />
                 <span className={`${styles.badge} ${r.activo ? styles.badgeActivo : styles.badgeInactivo}`}>
                   {r.activo ? 'Activa' : 'Inactiva'}
+                </span>
+                <span
+                  className={styles.copyBtn}
+                  role="button"
+                  tabIndex={0}
+                  title="Copiar rutina"
+                  onClick={(e) => { e.stopPropagation(); openCopyModal(r); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); openCopyModal(r); } }}
+                >
+                  ⧉
                 </span>
                 <span
                   className={styles.deleteBtn}
@@ -209,6 +238,51 @@ export default function Rutinas() {
                 <button type="button" className={styles.btnSecondary} onClick={() => setModal(false)}>Cancelar</button>
                 <button type="submit" className={styles.btnPrimary} disabled={createMut.isPending}>
                   {createMut.isPending ? 'Creando...' : 'Crear y editar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {copyModal && (
+        <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && setCopyModal(null)}>
+          <div className={styles.modalCard}>
+            <div className={styles.modalHeader}>
+              <h2>Copiar rutina</h2>
+              <button className={styles.closeBtn} onClick={() => setCopyModal(null)}>✕</button>
+            </div>
+            <form
+              onSubmit={(e) => { e.preventDefault(); setCopyError(''); copyMut.mutate({ id: copyModal.id, data: copyForm }); }}
+              className={styles.form}
+            >
+              <p className={styles.alumnoName}>Para {copyModal.alumno_nombre}</p>
+              <label className={styles.label}>
+                Nombre de la copia
+                <input
+                  className={styles.input}
+                  value={copyForm.nombre}
+                  onChange={(e) => setCopyForm((f) => ({ ...f, nombre: e.target.value }))}
+                  required
+                  minLength={2}
+                />
+              </label>
+              <label className={styles.label}>
+                Nueva fecha de inicio
+                <input
+                  className={styles.input}
+                  type="date"
+                  value={copyForm.start_date}
+                  onChange={(e) => setCopyForm((f) => ({ ...f, start_date: e.target.value }))}
+                  required
+                />
+              </label>
+              <WeekPreview startDate={copyForm.start_date} periodType={copyModal.period_type} />
+              {copyError && <p className={styles.formError}>{copyError}</p>}
+              <div className={styles.formActions}>
+                <button type="button" className={styles.btnSecondary} onClick={() => setCopyModal(null)}>Cancelar</button>
+                <button type="submit" className={styles.btnPrimary} disabled={copyMut.isPending}>
+                  {copyMut.isPending ? 'Copiando...' : 'Copiar y editar'}
                 </button>
               </div>
             </form>
