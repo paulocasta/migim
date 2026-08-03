@@ -29,6 +29,9 @@ function fmtShort(dateStr) {
 
 function WeekPreview({ startDate, periodType }) {
   if (!startDate) return null;
+  if (periodType === 'personalizada') {
+    return <p className={styles.weekPreview}>Se crea sin días — los agregás manualmente en el editor.</p>;
+  }
   const monday = mondayOf(startDate);
   const numWeeks = periodType === 'mensual' ? 4 : 1;
   const lastSunday = addDays(monday, numWeeks * 7 - 1);
@@ -226,6 +229,7 @@ export default function Rutinas() {
                 <select className={styles.input} name="period_type" value={form.period_type} onChange={handleChange}>
                   <option value="semanal">Semanal</option>
                   <option value="mensual">Mensual</option>
+                  <option value="personalizada">Personalizada</option>
                 </select>
               </label>
               <label className={styles.label}>

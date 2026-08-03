@@ -362,18 +362,15 @@ export default function RutinaBuilder() {
 
   const { data: routine, isLoading, error } = useRoutineTree(id);
   const [selectedDayId, setSelectedDayId] = useState(null);
-  const [addingDay, setAddingDay] = useState(false);
   const [confirmDeleteDay, setConfirmDeleteDay] = useState(null); // day object | null
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
+  const [addingDay, setAddingDay] = useState(false);
+  const [newDayLabel, setNewDayLabel] = useState('');
 
   const addDayMut = useMutation({
     mutationFn: (etiqueta) => routinesApi.createDay(id, { etiqueta, orden: (routine?.days?.length ?? 0) }),
-    onSuccess: (day) => {
-      invalidate();
-      setSelectedDayId(day.id);
-      setAddingDay(false);
-    },
+    onSuccess: (day) => { invalidate(); setSelectedDayId(day.id); setAddingDay(false); setNewDayLabel(''); },
   });
 
   const removeDayMut = useMutation({
@@ -399,6 +396,26 @@ export default function RutinaBuilder() {
 
   const selectedDay = routine.days.find((d) => d.id === selectedDayId) ?? routine.days[0] ?? null;
   const effectiveSelectedId = selectedDay?.id ?? null;
+
+  function renderDayTab(d) {
+    return (
+      <div key={d.id} className={styles.dayTabWrap}>
+        <button
+          className={`${styles.dayTab} ${d.id === effectiveSelectedId ? styles.dayTabActive : ''}`}
+          onClick={() => setSelectedDayId(d.id)}
+        >
+          {d.etiqueta}
+          {d.fecha && <span className={styles.dayTabFecha}> {fmtShort(d.fecha)}</span>}
+        </button>
+        <button
+          className={styles.removeDayBtn}
+          onClick={() => setConfirmDeleteDay(d)}
+          disabled={removeDayMut.isPending}
+          title="Eliminar día"
+        >×</button>
+      </div>
+    );
+  }
 
   return (
     <AppLayout>
@@ -448,57 +465,64 @@ export default function RutinaBuilder() {
       </div>
 
       {/* Day tabs */}
-      {chunkDays(routine.days).map((week, wi) => (
-        <div key={wi} className={styles.dayTabs}>
-          {chunkDays(routine.days).length > 1 && (
-            <span className={styles.weekLabel}>Semana {wi + 1}{weekRange(week)}</span>
-          )}
-          {week.map((d) => (
-            <div key={d.id} className={styles.dayTabWrap}>
-              <button
-                className={`${styles.dayTab} ${d.id === effectiveSelectedId ? styles.dayTabActive : ''}`}
-                onClick={() => setSelectedDayId(d.id)}
-              >
-                {d.etiqueta}
-                {d.fecha && <span className={styles.dayTabFecha}> {fmtShort(d.fecha)}</span>}
-              </button>
-              <button
-                className={styles.removeDayBtn}
-                onClick={() => setConfirmDeleteDay(d)}
-                disabled={removeDayMut.isPending}
-                title="Eliminar día"
-              >×</button>
-            </div>
-          ))}
-        </div>
-      ))}
-
-      <div className={styles.dayTabs}>
-        {addingDay ? (
-          <div className={styles.addDayPanel}>
-            <div className={styles.daySuggestions}>
-              {['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map((d) => (
-                <button
-                  key={d}
-                  className={styles.daySugBtn}
-                  onClick={() => addDayMut.mutate(d)}
-                  disabled={addDayMut.isPending}
-                  type="button"
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-            <button className={styles.btnIconGhost} onClick={() => setAddingDay(false)}>✕ Cancelar</button>
+      {routine.period_type === 'personalizada' ? (
+        <div className={styles.dayTabs}>{routine.days.map((d) => renderDayTab(d))}</div>
+      ) : (
+        chunkDays(routine.days).map((week, wi) => (
+          <div key={wi} className={styles.dayTabs}>
+            {chunkDays(routine.days).length > 1 && (
+              <span className={styles.weekLabel}>Semana {wi + 1}{weekRange(week)}</span>
+            )}
+            {week.map((d) => renderDayTab(d))}
           </div>
-        ) : (
-          <button className={styles.addDayBtn} onClick={() => setAddingDay(true)}>+ Día</button>
-        )}
-      </div>
+        ))
+      )}
+
+      {routine.period_type === 'personalizada' && (
+        <div className={styles.dayTabs}>
+          {addingDay ? (
+            <div className={styles.addDayPanel}>
+              <div className={styles.addDayRow}>
+                <input
+                  className={styles.dayInput}
+                  placeholder="Nombre del día (ej: Día 1, Fase fuerza)"
+                  value={newDayLabel}
+                  onChange={(e) => setNewDayLabel(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && newDayLabel.trim() && addDayMut.mutate(newDayLabel.trim())}
+                  autoFocus
+                />
+                <button
+                  className={styles.btnIcon}
+                  onClick={() => addDayMut.mutate(newDayLabel.trim())}
+                  disabled={!newDayLabel.trim() || addDayMut.isPending}
+                >✓</button>
+                <button className={styles.btnIconGhost} onClick={() => { setAddingDay(false); setNewDayLabel(''); }}>✕</button>
+              </div>
+              <div className={styles.daySuggestions}>
+                {['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    className={styles.daySugBtn}
+                    onClick={() => addDayMut.mutate(d)}
+                    disabled={addDayMut.isPending}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <button className={styles.addDayBtn} onClick={() => setAddingDay(true)}>+ Día</button>
+          )}
+        </div>
+      )}
 
       {/* Day content */}
       {routine.days.length === 0 ? (
-        <p className={styles.msg}>Sin días todavía. Agrega el primero con "+ Día".</p>
+        <p className={styles.msg}>
+          {routine.period_type === 'personalizada' ? 'Sin días todavía. Agregá el primero con "+ Día".' : 'Sin días todavía.'}
+        </p>
       ) : (
         <DayContent day={selectedDay} routineId={id} />
       )}

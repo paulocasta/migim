@@ -182,26 +182,30 @@ async function getTree(id) {
 }
 
 async function create({ alumno_id, nombre, period_type, start_date }, createdBy) {
-  const anchorMonday = mondayOf(start_date);
+  const isPersonalizada = period_type === 'personalizada';
+  const effectiveStartDate = isPersonalizada ? start_date : mondayOf(start_date);
+
   const { rows } = await db.query(
     `INSERT INTO routines(alumno_id, nombre, period_type, start_date, created_by)
      VALUES($1,$2,$3,$4,$5) RETURNING *`,
-    [alumno_id, nombre, period_type, anchorMonday, createdBy]
+    [alumno_id, nombre, period_type, effectiveStartDate, createdBy]
   );
   const routine = rows[0];
 
-  const weekDays = buildWeekDays(anchorMonday, period_type === 'mensual' ? 4 : 1);
-  const values = [];
-  const params = [];
-  weekDays.forEach(({ etiqueta, fecha, orden }, i) => {
-    const base = i * 4;
-    values.push(`($${base + 1},$${base + 2},$${base + 3},$${base + 4})`);
-    params.push(routine.id, etiqueta, fecha, orden);
-  });
-  await db.query(
-    `INSERT INTO routine_days(routine_id, etiqueta, fecha, orden) VALUES ${values.join(',')}`,
-    params
-  );
+  if (!isPersonalizada) {
+    const weekDays = buildWeekDays(effectiveStartDate, period_type === 'mensual' ? 4 : 1);
+    const values = [];
+    const params = [];
+    weekDays.forEach(({ etiqueta, fecha, orden }, i) => {
+      const base = i * 4;
+      values.push(`($${base + 1},$${base + 2},$${base + 3},$${base + 4})`);
+      params.push(routine.id, etiqueta, fecha, orden);
+    });
+    await db.query(
+      `INSERT INTO routine_days(routine_id, etiqueta, fecha, orden) VALUES ${values.join(',')}`,
+      params
+    );
+  }
 
   return routine;
 }
@@ -235,13 +239,14 @@ async function copyRoutine(sourceId, { nombre, start_date }, { requesterId, requ
     throw forbidden('No tenés permiso para copiar esta rutina');
   }
 
-  const newAnchorMonday = mondayOf(start_date);
-  const sourceMonday = toDateStr(source.start_date);
-  if (newAnchorMonday === sourceMonday) {
-    throw badRequest('Elegí una semana distinta a la de la rutina original');
+  const isPersonalizada = source.period_type === 'personalizada';
+  const newAnchor = isPersonalizada ? start_date : mondayOf(start_date);
+  const sourceAnchor = toDateStr(source.start_date);
+  if (newAnchor === sourceAnchor) {
+    throw badRequest('Elegí una fecha distinta a la de la rutina original');
   }
   const deltaDays = Math.round(
-    (new Date(`${newAnchorMonday}T00:00:00Z`) - new Date(`${sourceMonday}T00:00:00Z`)) / 86400000
+    (new Date(`${newAnchor}T00:00:00Z`) - new Date(`${sourceAnchor}T00:00:00Z`)) / 86400000
   );
 
   const client = await db.pool.connect();
@@ -251,7 +256,7 @@ async function copyRoutine(sourceId, { nombre, start_date }, { requesterId, requ
     const { rows: [routine] } = await client.query(
       `INSERT INTO routines(alumno_id, nombre, period_type, start_date, created_by, activo)
        VALUES($1,$2,$3,$4,$5,true) RETURNING *`,
-      [source.alumno_id, nombre || `${source.nombre} (copia)`, source.period_type, newAnchorMonday, requesterId]
+      [source.alumno_id, nombre || `${source.nombre} (copia)`, source.period_type, newAnchor, requesterId]
     );
 
     for (const day of source.days) {

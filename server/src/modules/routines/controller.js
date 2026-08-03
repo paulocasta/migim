@@ -42,7 +42,7 @@ async function getTree(req, res, next) {
 const createSchema = z.object({
   alumno_id: z.number().int().positive(),
   nombre: z.string().min(2),
-  period_type: z.enum(['semanal', 'mensual']),
+  period_type: z.enum(['semanal', 'mensual', 'personalizada']),
   start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha debe ser YYYY-MM-DD'),
 });
 
