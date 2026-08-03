@@ -6,6 +6,10 @@ function notFound(msg) {
   return Object.assign(new Error(msg), { status: 404 });
 }
 
+function forbidden(msg) {
+  return Object.assign(new Error(msg), { status: 403 });
+}
+
 const WEEKDAY_LABELS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 // 'YYYY-MM-DD' + n días → 'YYYY-MM-DD' (aritmética en UTC, sin corrimientos por huso horario)
@@ -186,19 +190,27 @@ async function create({ alumno_id, nombre, period_type, start_date }, createdBy)
   return routine;
 }
 
-async function update(id, { nombre, period_type, start_date, activo }) {
+async function update(id, { nombre, period_type, start_date, activo }, { requesterId, requesterRole }) {
+  const { rows: [existing] } = await db.query('SELECT id, created_by FROM routines WHERE id=$1', [id]);
+  if (!existing) throw notFound('Rutina no encontrada');
+  if (requesterRole !== 'admin' && existing.created_by !== requesterId) {
+    throw forbidden('No tenés permiso para editar esta rutina');
+  }
   const { rows } = await db.query(
     `UPDATE routines SET nombre=$1, period_type=$2, start_date=$3, activo=$4
      WHERE id=$5 RETURNING *`,
     [nombre, period_type, start_date, activo, id]
   );
-  if (!rows[0]) throw notFound('Rutina no encontrada');
   return rows[0];
 }
 
-async function remove(id) {
-  const { rows } = await db.query('DELETE FROM routines WHERE id=$1 RETURNING id', [id]);
-  if (!rows[0]) throw notFound('Rutina no encontrada');
+async function remove(id, { requesterId, requesterRole }) {
+  const { rows: [routine] } = await db.query('SELECT id, created_by FROM routines WHERE id=$1', [id]);
+  if (!routine) throw notFound('Rutina no encontrada');
+  if (requesterRole !== 'admin' && routine.created_by !== requesterId) {
+    throw forbidden('No tenés permiso para eliminar esta rutina');
+  }
+  await db.query('DELETE FROM routines WHERE id=$1', [id]);
 }
 
 // ── Days ──────────────────────────────────────────────────────────────────────

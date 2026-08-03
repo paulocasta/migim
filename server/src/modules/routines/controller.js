@@ -58,13 +58,23 @@ async function update(req, res, next) {
   try {
     const { nombre, period_type, start_date, activo } = req.body;
     if (!nombre) return bad(res, 'nombre requerido');
-    res.json({ routine: await svc.update(Number(req.params.id), { nombre, period_type, start_date, activo }) });
+    res.json({
+      routine: await svc.update(Number(req.params.id), { nombre, period_type, start_date, activo }, {
+        requesterId: req.user.id,
+        requesterRole: req.user.role,
+      }),
+    });
   } catch (err) { next(err); }
 }
 
 async function remove(req, res, next) {
-  try { await svc.remove(Number(req.params.id)); res.status(204).end(); }
-  catch (err) { next(err); }
+  try {
+    await svc.remove(Number(req.params.id), {
+      requesterId: req.user.id,
+      requesterRole: req.user.role,
+    });
+    res.status(204).end();
+  } catch (err) { next(err); }
 }
 
 // ── Days ──────────────────────────────────────────────────────────────────────
