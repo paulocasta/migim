@@ -140,6 +140,29 @@
 
 .dateInput:focus { border-color: #e94560; }
 
+.monthYear {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.monthSelect,
+.yearSelect {
+  background: #16213e;
+  border: 1px solid #2a4a7f;
+  border-radius: 8px;
+  color: #eaeaea;
+  font-size: 0.875rem;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.monthSelect:focus,
+.yearSelect:focus { border-color: #e94560; }
+
+.monthSelect option,
+.yearSelect option { background: #16213e; }
+
 /* Stat cards row */
 .statRow {
   display: flex;

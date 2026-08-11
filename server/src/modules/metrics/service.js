@@ -19,16 +19,16 @@ async function loggedExercises(alumnoId) {
   return rows;
 }
 
-// Progreso: fecha (inicio de rutina) → peso_max / peso_avg por ejercicio
+// Progreso: fecha de carga → peso_max / peso_avg por ejercicio
 async function progress(alumnoId, exerciseId, from, to) {
   const params = [alumnoId, exerciseId];
   const conds = ['we.alumno_id = $1', 're.exercise_id = $2', 'r.activo = true'];
-  if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
-  if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
+  if (from) { params.push(from); conds.push(`we.fecha >= $${params.length}`); }
+  if (to)   { params.push(to);   conds.push(`we.fecha <= $${params.length}`); }
 
   const { rows } = await db.query(
     `SELECT
-       r.start_date AS fecha,
+       we.fecha AS fecha,
        ps.sets_count,
        ps.reps,
        we.peso::numeric(6,2) AS peso
@@ -39,19 +39,19 @@ async function progress(alumnoId, exerciseId, from, to) {
      JOIN routine_days rd ON rb.routine_day_id = rd.id
      JOIN routines r ON rd.routine_id = r.id
      WHERE ${conds.join(' AND ')}
-     ORDER BY r.start_date ASC, ps.reps DESC, ps.sets_count DESC`,
+     ORDER BY we.fecha ASC, ps.reps DESC, ps.sets_count DESC`,
     params
   );
   return rows;
 }
 
-// Volumen: sets_count × reps × peso — por sesión (rutina) o por semana, según fecha de inicio de rutina
+// Volumen: sets_count × reps × peso — por día de carga o por semana
 async function volume(alumnoId, groupBy = 'session', from, to) {
-  const trunc = groupBy === 'week' ? `DATE_TRUNC('week', r.start_date)` : 'r.start_date';
+  const trunc = groupBy === 'week' ? `DATE_TRUNC('week', we.fecha)` : 'we.fecha';
   const params = [alumnoId];
   const conds = ['we.alumno_id = $1', 'r.activo = true'];
-  if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
-  if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
+  if (from) { params.push(from); conds.push(`we.fecha >= $${params.length}`); }
+  if (to)   { params.push(to);   conds.push(`we.fecha <= $${params.length}`); }
 
   const { rows } = await db.query(
     `SELECT
@@ -71,12 +71,12 @@ async function volume(alumnoId, groupBy = 'session', from, to) {
   return rows;
 }
 
-// PRs: peso máximo por ejercicio, con la fecha de inicio de la rutina donde se logró
+// PRs: peso máximo por ejercicio, con la fecha real en que se logró
 async function prs(alumnoId, from, to) {
   const params = [alumnoId];
   const conds = ['we.alumno_id = $1', 'r.activo = true'];
-  if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
-  if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
+  if (from) { params.push(from); conds.push(`we.fecha >= $${params.length}`); }
+  if (to)   { params.push(to);   conds.push(`we.fecha <= $${params.length}`); }
 
   const { rows } = await db.query(
     `SELECT DISTINCT ON (e.id)
@@ -84,7 +84,7 @@ async function prs(alumnoId, from, to) {
        e.nombre AS exercise_nombre,
        c.nombre AS category_nombre,
        we.peso AS peso_max,
-       r.start_date AS fecha_pr
+       we.fecha AS fecha_pr
      FROM weight_entries we
      JOIN prescribed_sets ps ON we.prescribed_set_id = ps.id
      JOIN routine_exercises re ON ps.routine_exercise_id = re.id
@@ -94,21 +94,21 @@ async function prs(alumnoId, from, to) {
      JOIN exercises e ON re.exercise_id = e.id
      JOIN categories c ON e.category_id = c.id
      WHERE ${conds.join(' AND ')}
-     ORDER BY e.id, we.peso DESC, r.start_date DESC`,
+     ORDER BY e.id, we.peso DESC, we.fecha DESC`,
     params
   );
   return rows;
 }
 
-// Asistencia: rutinas "entrenadas" en rango (por fecha de inicio) + cálculo de racha
+// Asistencia: días entrenados en rango (por fecha de carga real) + cálculo de racha
 async function attendance(alumnoId, from, to) {
   const params = [alumnoId];
   const conds = ['we.alumno_id = $1', 'r.activo = true'];
-  if (from) { params.push(from); conds.push(`r.start_date >= $${params.length}`); }
-  if (to)   { params.push(to);   conds.push(`r.start_date <= $${params.length}`); }
+  if (from) { params.push(from); conds.push(`we.fecha >= $${params.length}`); }
+  if (to)   { params.push(to);   conds.push(`we.fecha <= $${params.length}`); }
 
   const { rows } = await db.query(
-    `SELECT r.start_date AS fecha, COUNT(DISTINCT we.id) AS entries
+    `SELECT we.fecha AS fecha, COUNT(DISTINCT we.id) AS entries
      FROM weight_entries we
      JOIN prescribed_sets ps ON we.prescribed_set_id = ps.id
      JOIN routine_exercises re ON ps.routine_exercise_id = re.id
@@ -116,8 +116,8 @@ async function attendance(alumnoId, from, to) {
      JOIN routine_days rd ON rb.routine_day_id = rd.id
      JOIN routines r ON rd.routine_id = r.id
      WHERE ${conds.join(' AND ')}
-     GROUP BY r.start_date
-     ORDER BY r.start_date ASC`,
+     GROUP BY we.fecha
+     ORDER BY we.fecha ASC`,
     params
   );
 

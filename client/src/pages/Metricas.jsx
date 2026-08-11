@@ -78,6 +78,45 @@ function monthRangeFromValue(value) {
   return { from, to: `${value}-${String(lastDay).padStart(2, '0')}` };
 }
 
+const MONTH_NAMES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
+
+function MonthYearPicker({ value, setValue }) {
+  const [year, month] = value.split('-').map(Number);
+  const currentYear = Number(todayISO().slice(0, 4));
+  const years = [];
+  for (let y = currentYear + 1; y >= currentYear - 6; y--) years.push(y);
+
+  function update(newYear, newMonth) {
+    setValue(`${newYear}-${String(newMonth).padStart(2, '0')}`);
+  }
+
+  return (
+    <div className={styles.monthYear}>
+      <select
+        className={styles.monthSelect}
+        value={month}
+        onChange={(e) => update(year, Number(e.target.value))}
+      >
+        {MONTH_NAMES.map((name, i) => (
+          <option key={name} value={i + 1}>{name}</option>
+        ))}
+      </select>
+      <select
+        className={styles.yearSelect}
+        value={year}
+        onChange={(e) => update(Number(e.target.value), month)}
+      >
+        {years.map((y) => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function PeriodFilter({ mode, setMode, value, setValue }) {
   return (
     <div className={`${styles.controls} ${styles.periodFilter}`}>
@@ -98,9 +137,7 @@ function PeriodFilter({ mode, setMode, value, setValue }) {
       {mode === 'week' && (
         <input className={styles.dateInput} type="week" value={value} onChange={(e) => setValue(e.target.value)} />
       )}
-      {mode === 'month' && (
-        <input className={styles.dateInput} type="month" value={value} onChange={(e) => setValue(e.target.value)} />
-      )}
+      {mode === 'month' && <MonthYearPicker value={value} setValue={setValue} />}
     </div>
   );
 }

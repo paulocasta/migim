@@ -14,6 +14,11 @@ function today() {
   return new Date(d - offset).toISOString().slice(0, 10);
 }
 
+function dateStrUTC(value) {
+  const d = new Date(value);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+}
+
 // ── Video Player ──────────────────────────────────────────────────────────────
 
 function VideoToggle({ exercise }) {
@@ -177,7 +182,6 @@ function BlockSection({ block, entriesMap, fecha }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function RutinaAlumno() {
-  const fecha = today();
   const [selectedRoutineId, setSelectedRoutineId] = useState(null);
   const [selectedDayId, setSelectedDayId] = useState(null);
 
@@ -194,6 +198,17 @@ export default function RutinaAlumno() {
     enabled: !!activeRoutineId,
   });
 
+  const selectedDay =
+    routine?.days.find((d) => d.id === selectedDayId) ??
+    routine?.days[0] ??
+    null;
+
+  const effectiveDayId = selectedDay?.id ?? null;
+
+  // Fecha real del día de rutina (si la tiene) en vez de "hoy", para que el peso
+  // cargado quede fechado el día de entrenamiento y no el día en que se lo carga.
+  const fecha = selectedDay?.fecha ? dateStrUTC(selectedDay.fecha) : today();
+
   const { data: entries = [] } = useQuery({
     queryKey: ['weight-entries', fecha],
     queryFn: () => weightEntriesApi.list(fecha),
@@ -201,13 +216,6 @@ export default function RutinaAlumno() {
 
   // map: prescribed_set_id → entry
   const entriesMap = Object.fromEntries(entries.map((e) => [e.prescribed_set_id, e]));
-
-  const selectedDay =
-    routine?.days.find((d) => d.id === selectedDayId) ??
-    routine?.days[0] ??
-    null;
-
-  const effectiveDayId = selectedDay?.id ?? null;
 
   if (loadingRoutines) {
     return <AppLayout><p className={styles.msg}>Cargando rutinas...</p></AppLayout>;
