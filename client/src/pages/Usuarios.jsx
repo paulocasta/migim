@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthContext';
 import AppLayout from '../components/AppLayout';
@@ -14,7 +15,9 @@ export default function Usuarios() {
   const { user: me } = useAuth();
   const qc = useQueryClient();
 
-  const [filterRole, setFilterRole] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterRole = searchParams.get('role') || '';
+  const setFilterRole = (role) => setSearchParams(role ? { role } : {});
   const [modal, setModal] = useState(null); // null | { mode: 'create' | 'edit', user?: {} }
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');

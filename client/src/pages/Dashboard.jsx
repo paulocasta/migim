@@ -1,16 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import AppLayout from '../components/AppLayout';
 import { usersApi } from '../api/users';
 import styles from './Dashboard.module.css';
 
-function StatCard({ label, value, to }) {
+function StatCard({ label, value }) {
   return (
-    <Link to={to} className={styles.statCard}>
+    <div className={styles.statCard}>
       <span className={styles.statValue}>{value ?? '—'}</span>
       <span className={styles.statLabel}>{label}</span>
-    </Link>
+    </div>
   );
 }
 
@@ -36,23 +35,11 @@ export default function Dashboard() {
       </p>
 
       <div className={styles.stats}>
-        <StatCard label="Alumnos activos" value={alumnos} to="/usuarios?role=alumno" />
+        <StatCard label="Alumnos activos" value={alumnos} />
         {user.role === 'admin' && (
-          <StatCard label="Profesores activos" value={profes} to="/usuarios?role=profesor" />
+          <StatCard label="Profesores activos" value={profes} />
         )}
-        <StatCard label="Usuarios inactivos" value={inactivos} to="/usuarios" />
-      </div>
-
-      <div className={styles.cards}>
-        <div className={styles.card}>
-          <h3>Próximamente</h3>
-          <ul className={styles.upcoming}>
-            <li>Catálogo de ejercicios (Fase 3)</li>
-            <li>Constructor de rutinas (Fase 4)</li>
-            <li>Carga de pesos por alumnos (Fase 5)</li>
-            <li>Métricas y gráficos (Fase 6)</li>
-          </ul>
-        </div>
+        <StatCard label="Usuarios inactivos" value={inactivos} />
       </div>
     </AppLayout>
   );

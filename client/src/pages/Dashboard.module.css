@@ -46,38 +46,3 @@
   color: #8892a4;
   text-align: center;
 }
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-.card {
-  background: #16213e;
-  border: 1px solid #2a4a7f;
-  border-radius: 10px;
-  padding: 1.25rem 1.5rem;
-}
-
-.card h3 {
-  margin: 0 0 0.75rem;
-  font-size: 0.95rem;
-  color: #8892a4;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.8rem;
-}
-
-.upcoming {
-  margin: 0;
-  padding-left: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.upcoming li {
-  font-size: 0.9rem;
-  color: #eaeaea;
-}
