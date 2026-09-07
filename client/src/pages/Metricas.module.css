@@ -140,6 +140,19 @@
 
 .dateInput:focus { border-color: #e94560; }
 
+.weekPick {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.weekRangeLabel {
+  font-size: 0.8rem;
+  color: #8892a4;
+  white-space: nowrap;
+}
+
 .monthYear {
   display: flex;
   gap: 0.5rem;

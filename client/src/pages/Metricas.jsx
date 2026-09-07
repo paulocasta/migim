@@ -118,6 +118,8 @@ function MonthYearPicker({ value, setValue }) {
 }
 
 function PeriodFilter({ mode, setMode, value, setValue }) {
+  const weekRange = mode === 'week' ? weekRangeFromValue(value) : null;
+
   return (
     <div className={`${styles.controls} ${styles.periodFilter}`}>
       <span className={styles.ctrlLabel}>Período</span>
@@ -135,7 +137,12 @@ function PeriodFilter({ mode, setMode, value, setValue }) {
         ))}
       </div>
       {mode === 'week' && (
-        <input className={styles.dateInput} type="week" value={value} onChange={(e) => setValue(e.target.value)} />
+        <div className={styles.weekPick}>
+          <input className={styles.dateInput} type="week" value={value} onChange={(e) => setValue(e.target.value)} />
+          {weekRange && (
+            <span className={styles.weekRangeLabel}>{fmtDate(weekRange.from)}–{fmtDate(weekRange.to)}</span>
+          )}
+        </div>
       )}
       {mode === 'month' && <MonthYearPicker value={value} setValue={setValue} />}
     </div>
