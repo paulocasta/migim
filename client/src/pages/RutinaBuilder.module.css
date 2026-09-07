@@ -507,6 +507,39 @@
 .btnSecondary { background: transparent; color: #8892a4; border: 1.5px solid #2a4a7f; border-radius: 6px; padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
 .btnSecondary:hover { border-color: #eaeaea; color: #eaeaea; }
 
+/* ── Copy day modal ───────────────────────────────────────────────────────── */
+.copyDayBtn {
+  background: transparent;
+  border: none;
+  color: #8892a4;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  transition: color 0.15s, opacity 0.15s;
+  line-height: 1;
+}
+.copyDayBtn:hover { color: #eaeaea; }
+.copyDayBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.copyWarning {
+  font-size: 0.8rem;
+  color: #8892a4;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dayCheckRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.dayCheckRow:hover { background: rgba(255,255,255,0.04); }
+.dayCheckRow input { accent-color: #e94560; }
+
 /* ── Misc ─────────────────────────────────────────────────────────────────── */
 .msg { color: #8892a4; text-align: center; margin-top: 1rem; font-size: 0.875rem; }
 .msgError { color: #e94560; text-align: center; margin-top: 1rem; }

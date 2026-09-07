@@ -116,6 +116,19 @@ async function removeDay(req, res, next) {
   catch (err) { next(err); }
 }
 
+const copyDayToSchema = z.object({
+  target_day_ids: z.array(z.number().int().positive()).min(1),
+});
+
+async function copyDayTo(req, res, next) {
+  try {
+    const parsed = copyDayToSchema.safeParse(req.body);
+    if (!parsed.success) return bad(res, parsed.error.errors[0].message);
+    const result = await svc.copyDayTo(Number(req.params.dayId), parsed.data.target_day_ids);
+    res.json(result);
+  } catch (err) { next(err); }
+}
+
 // ── Blocks ────────────────────────────────────────────────────────────────────
 async function createBlock(req, res, next) {
   try {
@@ -169,7 +182,7 @@ async function removeSet(req, res, next) {
 module.exports = {
   listBlockTypes,
   mine, list, getTree, create, update, remove, copy,
-  createDay, updateDay, removeDay,
+  createDay, updateDay, removeDay, copyDayTo,
   createBlock, removeBlock,
   addExercise, removeExercise,
   addSet, updateSet, removeSet,

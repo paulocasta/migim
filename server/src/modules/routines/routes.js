@@ -26,6 +26,7 @@ const daysRouter = Router();
 daysRouter.put('/:dayId', auth, staff, ctrl.updateDay);
 daysRouter.delete('/:dayId', auth, staff, ctrl.removeDay);
 daysRouter.post('/:dayId/blocks', auth, staff, ctrl.createBlock);
+daysRouter.post('/:dayId/copy-to', auth, staff, ctrl.copyDayTo);
 
 // /api/routine-blocks
 const blocksRouter = Router();

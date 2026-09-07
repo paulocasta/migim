@@ -298,6 +298,93 @@ async function copyRoutine(sourceId, { nombre, start_date }, { requesterId, requ
   }
 }
 
+async function copyDayTo(sourceDayId, targetDayIds) {
+  const { rows: [sourceDay] } = await db.query(
+    'SELECT id, routine_id FROM routine_days WHERE id=$1',
+    [sourceDayId]
+  );
+  if (!sourceDay) throw notFound('Día no encontrado');
+
+  const { rows: blocks } = await db.query(
+    `SELECT rb.* FROM routine_blocks rb WHERE rb.routine_day_id = $1 ORDER BY rb.orden, rb.id`,
+    [sourceDayId]
+  );
+
+  let exercises = [];
+  let sets = [];
+  if (blocks.length) {
+    const blockIds = blocks.map((b) => b.id);
+    const { rows: exRows } = await db.query(
+      'SELECT * FROM routine_exercises WHERE routine_block_id = ANY($1) ORDER BY routine_block_id, orden, id',
+      [blockIds]
+    );
+    exercises = exRows;
+
+    if (exercises.length) {
+      const reIds = exercises.map((e) => e.id);
+      const { rows: setRows } = await db.query(
+        'SELECT * FROM prescribed_sets WHERE routine_exercise_id = ANY($1) ORDER BY routine_exercise_id, orden, id',
+        [reIds]
+      );
+      sets = setRows;
+    }
+  }
+
+  const exByBlock = {};
+  exercises.forEach((e) => (exByBlock[e.routine_block_id] ||= []).push(e));
+  const setsByEx = {};
+  sets.forEach((s) => (setsByEx[s.routine_exercise_id] ||= []).push(s));
+
+  const targetIds = [...new Set(targetDayIds)].filter((id) => id !== sourceDayId);
+  if (!targetIds.length) throw badRequest('Elegí al menos un día destino distinto del día origen');
+
+  const { rows: targetDays } = await db.query(
+    'SELECT id FROM routine_days WHERE id = ANY($1) AND routine_id = $2',
+    [targetIds, sourceDay.routine_id]
+  );
+  if (targetDays.length !== targetIds.length) {
+    throw badRequest('Los días destino deben pertenecer a la misma rutina');
+  }
+
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    for (const targetDayId of targetIds) {
+      await client.query('DELETE FROM routine_blocks WHERE routine_day_id=$1', [targetDayId]);
+
+      for (const block of blocks) {
+        const { rows: [newBlock] } = await client.query(
+          'INSERT INTO routine_blocks(routine_day_id, block_type_id, orden) VALUES($1,$2,$3) RETURNING id',
+          [targetDayId, block.block_type_id, block.orden]
+        );
+
+        for (const ex of exByBlock[block.id] || []) {
+          const { rows: [newEx] } = await client.query(
+            'INSERT INTO routine_exercises(routine_block_id, exercise_id, orden, notas) VALUES($1,$2,$3,$4) RETURNING id',
+            [newBlock.id, ex.exercise_id, ex.orden, ex.notas]
+          );
+
+          for (const set of setsByEx[ex.id] || []) {
+            await client.query(
+              'INSERT INTO prescribed_sets(routine_exercise_id, orden, sets_count, reps) VALUES($1,$2,$3,$4)',
+              [newEx.id, set.orden, set.sets_count, set.reps]
+            );
+          }
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+    return { updated_day_ids: targetIds };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 // ── Days ──────────────────────────────────────────────────────────────────────
 
 async function createDay(routineId, { etiqueta, orden, fecha }) {
@@ -379,7 +466,7 @@ async function removeSet(id) {
 module.exports = {
   listBlockTypes,
   listForAlumno, list, getTree, create, update, remove, copyRoutine,
-  createDay, updateDay, removeDay,
+  createDay, updateDay, removeDay, copyDayTo,
   createBlock, removeBlock,
   addExercise, removeExercise,
   addSet, updateSet, removeSet,

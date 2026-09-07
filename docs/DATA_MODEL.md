@@ -72,7 +72,7 @@ Seed: `Entrada en calor`, `Potencia`, `Fuerza`, `Accesorios`, `Vuelta a la calma
 | nombre | text | ej "Bloque Julio - Hipertrofia" |
 | alumno_id | int FK users(id) | destinatario |
 | created_by | int FK users(id) | profe/admin autor |
-| period_type | text | `semanal` \| `mensual` (CHECK) |
+| period_type | text | `semanal` \| `mensual` \| `personalizada` (CHECK) |
 | start_date | date | inicio del bloque |
 | activo | boolean | default true |
 | created_at | timestamptz | default now() |
@@ -83,7 +83,8 @@ Seed: `Entrada en calor`, `Potencia`, `Fuerza`, `Accesorios`, `Vuelta a la calma
 | id | serial PK | |
 | routine_id | int FK routines(id) ON DELETE CASCADE | |
 | etiqueta | text | "Lunes", "Día 1"… |
-| orden | int | |
+| fecha | date, nullable | fecha real del día (auto-calculada en `semanal`/`mensual`; null en `personalizada` salvo que se cargue a mano) |
+| orden | int | posición estable; en `semanal`/`mensual` codifica la semana (`semana = orden // 7`) y no se reindexa al borrar un día |
 
 ### routine_blocks
 | col | tipo | notas |

@@ -14,9 +14,13 @@ function fmtShort(dateStr) {
 }
 
 function chunkDays(days) {
-  const chunks = [];
-  for (let i = 0; i < days.length; i += 7) chunks.push(days.slice(i, i + 7));
-  return chunks;
+  const weeks = new Map();
+  days.forEach((d) => {
+    const weekIdx = Math.floor((d.orden ?? 0) / 7);
+    if (!weeks.has(weekIdx)) weeks.set(weekIdx, []);
+    weeks.get(weekIdx).push(d);
+  });
+  return [...weeks.keys()].sort((a, b) => a - b).map((k) => weeks.get(k));
 }
 
 function weekRange(week) {
@@ -335,6 +339,70 @@ function AddBlock({ dayId, routineId }) {
   );
 }
 
+// ── Copy Day Modal ────────────────────────────────────────────────────────────
+
+function CopyDayModal({ day, allDays, routineId, onClose }) {
+  const invalidate = useInvalidate(routineId);
+  const otherDays = allDays.filter((d) => d.id !== day.id);
+  const [selected, setSelected] = useState(
+    () => new Set(otherDays.filter((d) => d.etiqueta === day.etiqueta).map((d) => d.id))
+  );
+
+  const copyMut = useMutation({
+    mutationFn: () => routinesApi.copyDayTo(day.id, [...selected]),
+    onSuccess: () => { invalidate(); onClose(); },
+  });
+
+  function toggle(id) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  return (
+    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={styles.pickerCard}>
+        <div className={styles.modalHeader}>
+          <h2>Copiar "{day.etiqueta}" a otros días</h2>
+          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        </div>
+        <div className={styles.pickerBody}>
+          <p className={styles.copyWarning}>
+            Se reemplazan los bloques y ejercicios de los días tildados por una copia de los de "{day.etiqueta}".
+            Los pesos ya cargados por el alumno no se ven afectados.
+          </p>
+          <div className={styles.exList}>
+            {otherDays.length === 0 && <p className={styles.msg}>No hay otros días en esta rutina.</p>}
+            {otherDays.map((d) => (
+              <label key={d.id} className={styles.dayCheckRow}>
+                <input
+                  type="checkbox"
+                  checked={selected.has(d.id)}
+                  onChange={() => toggle(d.id)}
+                />
+                <span className={styles.exName}>{d.etiqueta}</span>
+                {d.fecha && <span className={styles.dayTabFecha}>{fmtShort(d.fecha)}</span>}
+              </label>
+            ))}
+          </div>
+          <div className={styles.pickerActions}>
+            <button className={styles.btnSecondary} onClick={onClose}>Cancelar</button>
+            <button
+              className={styles.btnPrimary}
+              disabled={selected.size === 0 || copyMut.isPending}
+              onClick={() => copyMut.mutate()}
+            >
+              {copyMut.isPending ? 'Copiando...' : `Copiar a ${selected.size} día${selected.size === 1 ? '' : 's'}`}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Day Content ───────────────────────────────────────────────────────────────
 
 function DayContent({ day, routineId }) {
@@ -367,6 +435,7 @@ export default function RutinaBuilder() {
   const [nameValue, setNameValue] = useState('');
   const [addingDay, setAddingDay] = useState(false);
   const [newDayLabel, setNewDayLabel] = useState('');
+  const [copyingDay, setCopyingDay] = useState(null); // día origen | null
 
   const addDayMut = useMutation({
     mutationFn: (etiqueta) => routinesApi.createDay(id, { etiqueta, orden: (routine?.days?.length ?? 0) }),
@@ -407,6 +476,12 @@ export default function RutinaBuilder() {
           {d.etiqueta}
           {d.fecha && <span className={styles.dayTabFecha}> {fmtShort(d.fecha)}</span>}
         </button>
+        <button
+          className={styles.copyDayBtn}
+          onClick={() => setCopyingDay(d)}
+          disabled={d.blocks.length === 0 || routine.days.length < 2}
+          title="Copiar a otros días"
+        >⧉</button>
         <button
           className={styles.removeDayBtn}
           onClick={() => setConfirmDeleteDay(d)}
@@ -533,6 +608,15 @@ export default function RutinaBuilder() {
           onConfirm={() => { removeDayMut.mutate(confirmDeleteDay.id); setConfirmDeleteDay(null); }}
           onCancel={() => setConfirmDeleteDay(null)}
           isPending={removeDayMut.isPending}
+        />
+      )}
+
+      {copyingDay && (
+        <CopyDayModal
+          day={copyingDay}
+          allDays={routine.days}
+          routineId={id}
+          onClose={() => setCopyingDay(null)}
         />
       )}
     </AppLayout>

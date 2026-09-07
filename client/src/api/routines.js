@@ -19,6 +19,8 @@ export const routinesApi = {
   updateDay: (dayId, data) =>
     api.put(`/routine-days/${dayId}`, data).then((r) => r.data.day),
   removeDay: (dayId) => api.delete(`/routine-days/${dayId}`),
+  copyDayTo: (dayId, targetDayIds) =>
+    api.post(`/routine-days/${dayId}/copy-to`, { target_day_ids: targetDayIds }).then((r) => r.data),
 
   createBlock: (dayId, data) =>
     api.post(`/routine-days/${dayId}/blocks`, data).then((r) => r.data.block),

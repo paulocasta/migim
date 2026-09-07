@@ -61,12 +61,14 @@ Alumnos no tienen acceso a este módulo (salvo `/auth/me`).
 | POST | `/routines` | A/P | crea rutina para un alumno |
 | PUT | `/routines/:id` | A/P | edita metadata |
 | DELETE | `/routines/:id` | A/P | borra (cascade) |
+| POST | `/routines/:id/copy` | A/P | clona la rutina completa (días→bloques→ejercicios→series) a una nueva fecha de inicio; `created_by`/`admin` solamente |
 
 ### Subrecursos (todos A/P, cascade)
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | POST/PUT/DELETE | `/routines/:id/days[/:dayId]` | días |
+| POST | `/routine-days/:dayId/copy-to` | copia bloques/ejercicios/series de este día a otros días de la misma rutina (reemplaza contenido destino) |
 | POST/PUT/DELETE | `/days/:dayId/blocks[/:blockId]` | bloques (elige `block_type_id`) |
 | POST/PUT/DELETE | `/blocks/:blockId/exercises[/:reId]` | ejercicios en bloque |
 | POST/PUT/DELETE | `/exercises-in-routine/:reId/prescribed-sets[/:psId]` | grupos `series×reps` |
