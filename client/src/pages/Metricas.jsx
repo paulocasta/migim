@@ -399,7 +399,6 @@ function AttendanceTab({ alumnoId, from, to }) {
         <>
           <div className={styles.statRow}>
             <StatCard label="Días entrenados" value={data.totalDays} accent />
-            <StatCard label="Racha actual" value={`${data.streak} días`} accent={data.streak > 0} />
           </div>
 
           {chartData.length === 0 ? (
