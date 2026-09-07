@@ -4,6 +4,7 @@ import AppLayout from '../components/AppLayout';
 import { routinesApi } from '../api/routines';
 import { weightEntriesApi } from '../api/weightEntries';
 import { getEmbedUrl } from '../utils/video';
+import { fmtShort, chunkDays, weekRange } from '../utils/routineWeeks';
 import styles from './RutinaAlumno.module.css';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -210,7 +211,7 @@ export default function RutinaAlumno() {
   // cargado quede fechado el día de entrenamiento y no el día en que se lo carga.
   const fecha = selectedDay?.fecha ? dateStrUTC(selectedDay.fecha) : today();
 
-  const { data: entries = [] } = useQuery({
+  const { data: entries = [], isLoading: loadingEntries } = useQuery({
     queryKey: ['weight-entries', activeRoutineId],
     queryFn: () => weightEntriesApi.list(),
     enabled: !!activeRoutineId,
@@ -223,6 +224,19 @@ export default function RutinaAlumno() {
     return acc;
   }, {});
   const entriesMap = entriesByFecha[fecha] || {};
+
+  function renderDayTab(d) {
+    return (
+      <button
+        key={d.id}
+        className={`${styles.dayTab} ${d.id === effectiveDayId ? styles.dayTabActive : ''}`}
+        onClick={() => setSelectedDayId(d.id)}
+      >
+        {d.etiqueta}
+        {d.fecha && <span className={styles.dayTabFecha}> {fmtShort(d.fecha)}</span>}
+      </button>
+    );
+  }
 
   if (loadingRoutines) {
     return <AppLayout><p className={styles.msg}>Cargando rutinas...</p></AppLayout>;
@@ -271,26 +285,30 @@ export default function RutinaAlumno() {
 
       {/* Tabs de días */}
       {loadingTree && <p className={styles.msg}>Cargando rutina...</p>}
+      {!loadingTree && loadingEntries && <p className={styles.msg}>Cargando pesos...</p>}
 
       {routine && (
         <>
-          <div className={styles.dayTabs}>
-            {routine.days.map((d) => (
-              <button
-                key={d.id}
-                className={`${styles.dayTab} ${d.id === effectiveDayId ? styles.dayTabActive : ''}`}
-                onClick={() => setSelectedDayId(d.id)}
-              >
-                {d.etiqueta}
-              </button>
-            ))}
-          </div>
+          {routine.period_type === 'personalizada' ? (
+            <div className={styles.dayTabs}>
+              {routine.days.map((d) => renderDayTab(d))}
+            </div>
+          ) : (
+            chunkDays(routine.days).map((week, wi) => (
+              <div key={wi} className={styles.dayTabs}>
+                {chunkDays(routine.days).length > 1 && (
+                  <span className={styles.weekLabel}>Semana {wi + 1}{weekRange(week)}</span>
+                )}
+                {week.map((d) => renderDayTab(d))}
+              </div>
+            ))
+          )}
 
           {!selectedDay && routine.days.length === 0 && (
             <p className={styles.msg}>La rutina no tiene días configurados todavía.</p>
           )}
 
-          {selectedDay && (
+          {selectedDay && !loadingEntries && (
             <div className={styles.dayContent}>
               {selectedDay.blocks.length === 0 ? (
                 <p className={styles.msg}>Este día no tiene ejercicios todavía.</p>

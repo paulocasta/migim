@@ -76,6 +76,18 @@
   font-weight: 600;
 }
 
+.dayTabFecha { font-size: 0.72rem; color: #8892a4; }
+
+.weekLabel {
+  width: 100%;
+  font-size: 0.78rem;
+  color: #8892a4;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+
 /* ── Day content ──────────────────────────────────────────────────────────── */
 .dayContent {
   display: flex;

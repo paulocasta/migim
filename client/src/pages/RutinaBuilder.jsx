@@ -5,31 +5,10 @@ import AppLayout from '../components/AppLayout';
 import ConfirmModal from '../components/ConfirmModal';
 import { routinesApi, blockTypesApi } from '../api/routines';
 import { exercisesApi } from '../api/exercises';
+import { fmtShort, chunkDays, weekRange } from '../utils/routineWeeks';
 import styles from './RutinaBuilder.module.css';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function fmtShort(dateStr) {
-  return new Date(dateStr).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
-}
-
-function chunkDays(days) {
-  const weeks = new Map();
-  days.forEach((d) => {
-    const weekIdx = Math.floor((d.orden ?? 0) / 7);
-    if (!weeks.has(weekIdx)) weeks.set(weekIdx, []);
-    weeks.get(weekIdx).push(d);
-  });
-  return [...weeks.keys()].sort((a, b) => a - b).map((k) => weeks.get(k));
-}
-
-function weekRange(week) {
-  const fechas = week.map((d) => d.fecha).filter(Boolean);
-  if (!fechas.length) return '';
-  const min = fechas.reduce((a, b) => (a < b ? a : b));
-  const max = fechas.reduce((a, b) => (a > b ? a : b));
-  return ` (${fmtShort(min)}–${fmtShort(max)})`;
-}
 
 function useRoutineTree(id) {
   return useQuery({
