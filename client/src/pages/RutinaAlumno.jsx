@@ -50,7 +50,7 @@ function VideoToggle({ exercise }) {
 
 // ── Weight Input per Set ──────────────────────────────────────────────────────
 
-function WeightInput({ set, existingEntry, fecha, onSaved, requierePeso = true }) {
+function WeightInput({ set, existingEntry, fecha, routineId, onSaved, requierePeso = true }) {
   const qc = useQueryClient();
   const [peso, setPeso] = useState(existingEntry?.peso != null ? String(existingEntry.peso) : '');
   const [saved, setSaved] = useState(!!existingEntry);
@@ -66,7 +66,7 @@ function WeightInput({ set, existingEntry, fecha, onSaved, requierePeso = true }
     onSuccess: () => {
       setSaved(true);
       setError('');
-      qc.invalidateQueries({ queryKey: ['weight-entries', fecha] });
+      qc.invalidateQueries({ queryKey: ['weight-entries', routineId] });
       onSaved?.();
     },
     onError: (err) => setError(err.response?.data?.error?.message || 'Error al guardar'),
@@ -121,7 +121,7 @@ function WeightInput({ set, existingEntry, fecha, onSaved, requierePeso = true }
 
 // ── Exercise Card ─────────────────────────────────────────────────────────────
 
-function ExerciseCard({ exercise, entriesMap, fecha }) {
+function ExerciseCard({ exercise, entriesMap, fecha, routineId }) {
   const allSaved = exercise.sets.length > 0 &&
     exercise.sets.every((s) => entriesMap[s.id]);
 
@@ -151,6 +151,7 @@ function ExerciseCard({ exercise, entriesMap, fecha }) {
               set={s}
               existingEntry={entriesMap[s.id]}
               fecha={fecha}
+              routineId={routineId}
               requierePeso={exercise.requiere_peso !== false}
             />
           ))}
@@ -162,7 +163,7 @@ function ExerciseCard({ exercise, entriesMap, fecha }) {
 
 // ── Block Section ─────────────────────────────────────────────────────────────
 
-function BlockSection({ block, entriesMap, fecha }) {
+function BlockSection({ block, entriesMap, fecha, routineId }) {
   return (
     <div className={styles.block}>
       <div className={styles.blockHeader}>{block.block_type_nombre}</div>
@@ -171,7 +172,7 @@ function BlockSection({ block, entriesMap, fecha }) {
       ) : (
         <div className={styles.exList}>
           {block.exercises.map((ex) => (
-            <ExerciseCard key={ex.id} exercise={ex} entriesMap={entriesMap} fecha={fecha} />
+            <ExerciseCard key={ex.id} exercise={ex} entriesMap={entriesMap} fecha={fecha} routineId={routineId} />
           ))}
         </div>
       )}
@@ -210,12 +211,18 @@ export default function RutinaAlumno() {
   const fecha = selectedDay?.fecha ? dateStrUTC(selectedDay.fecha) : today();
 
   const { data: entries = [] } = useQuery({
-    queryKey: ['weight-entries', fecha],
-    queryFn: () => weightEntriesApi.list(fecha),
+    queryKey: ['weight-entries', activeRoutineId],
+    queryFn: () => weightEntriesApi.list(),
+    enabled: !!activeRoutineId,
   });
 
-  // map: prescribed_set_id → entry
-  const entriesMap = Object.fromEntries(entries.map((e) => [e.prescribed_set_id, e]));
+  // agrupa una sola vez por fecha para que cambiar de día no dispare fetch
+  const entriesByFecha = entries.reduce((acc, e) => {
+    const key = dateStrUTC(e.fecha);
+    (acc[key] ??= {})[e.prescribed_set_id] = e;
+    return acc;
+  }, {});
+  const entriesMap = entriesByFecha[fecha] || {};
 
   if (loadingRoutines) {
     return <AppLayout><p className={styles.msg}>Cargando rutinas...</p></AppLayout>;
@@ -289,7 +296,7 @@ export default function RutinaAlumno() {
                 <p className={styles.msg}>Este día no tiene ejercicios todavía.</p>
               ) : (
                 selectedDay.blocks.map((b) => (
-                  <BlockSection key={b.id} block={b} entriesMap={entriesMap} fecha={fecha} />
+                  <BlockSection key={b.id} block={b} entriesMap={entriesMap} fecha={fecha} routineId={activeRoutineId} />
                 ))
               )}
             </div>
