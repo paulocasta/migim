@@ -59,7 +59,7 @@ migim/
 # server
 cd server && npm install
 npm run migrate        # migraciones DB
-npm run seed           # seed block_types + categorías + admin inicial (admin@migim.com / changeme123)
+npm run seed           # seed block_types + categorías + admin inicial (ADMIN_EMAIL / ADMIN_PASSWORD de .env)
 npm run migrate:seed   # migrate + seed en un paso
 npm run dev            # API en desarrollo (nodemon)
 npm start              # API en producción

@@ -16,4 +16,12 @@ if (!config.databaseUrl) {
   process.exit(1);
 }
 
+if (!process.env.JWT_SECRET) {
+  if (config.nodeEnv === 'production') {
+    console.error('ERROR: JWT_SECRET no está configurado en .env');
+    process.exit(1);
+  }
+  console.warn('WARN: JWT_SECRET no configurado, usando secreto de desarrollo');
+}
+
 module.exports = config;

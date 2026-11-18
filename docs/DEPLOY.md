@@ -92,9 +92,8 @@ node src/db/migrate.js
 node src/db/seed.js
 ```
 
-Esto crea todas las tablas y el usuario admin inicial:
-- Email: `admin@migim.com`
-- Password: `changeme123` → **cambiar inmediatamente desde la app**
+Esto crea todas las tablas y el usuario admin inicial con `ADMIN_EMAIL` / `ADMIN_PASSWORD`
+definidos en `server/.env` (obligatorios, password mín. 8 caracteres). Usar un password fuerte.
 
 ---
 
@@ -197,7 +196,7 @@ curl https://TU_DOMINIO.com/api/health
 # Login admin
 curl -X POST https://TU_DOMINIO.com/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@migim.com","password":"changeme123"}'
+  -d '{"email":"TU_ADMIN_EMAIL","password":"TU_ADMIN_PASSWORD"}'
 ```
 
 Abrir `https://TU_DOMINIO.com` en el browser y verificar:

@@ -26,10 +26,15 @@ const CATEGORIES = [
 
 const ADMIN = {
   nombre: 'Administrador',
-  email: 'admin@migim.com',
-  password: 'changeme123',
+  email: process.env.ADMIN_EMAIL,
+  password: process.env.ADMIN_PASSWORD,
   role: 'admin',
 };
+
+if (!ADMIN.email || !ADMIN.password || ADMIN.password.length < 8) {
+  console.error('ERROR: definir ADMIN_EMAIL y ADMIN_PASSWORD (mín. 8 caracteres) en .env antes de correr el seed');
+  process.exit(1);
+}
 
 async function seed() {
   const client = await pool.connect();
@@ -63,7 +68,7 @@ async function seed() {
          VALUES($1, $2, $3, $4)`,
         [ADMIN.nombre, ADMIN.email, hash, ADMIN.role]
       );
-      console.log(`Admin creado: ${ADMIN.email} / ${ADMIN.password}`);
+      console.log(`Admin creado: ${ADMIN.email}`);
     } else {
       console.log('Admin ya existe, skip.');
     }
